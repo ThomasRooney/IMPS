@@ -1,4 +1,4 @@
-#include "emulate.h"
+#include "common.h"
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,7 +8,7 @@
 // faster and easier way
 
 
-void printInstruction(binaryInstruction instruction) {
+void printBinaryInstruction(binaryInstruction instruction) {
 	int i;
 	for (i = 0; i < 8; ++i) { printf("%i",(instruction.w0 >> i) & 1); }
 	for (i = 0; i < 8; ++i) { printf("%i",(instruction.w1 >> i) & 1); }
@@ -17,14 +17,34 @@ void printInstruction(binaryInstruction instruction) {
 	printf("\n");
 }
 
+//TODO: Implement
+int instructionFromOpcode(opCode opCode) {
+	return INSTRUCTION_TYPE_UNKNOWN;
+}
 
+
+//TODO: Implement
+instruction disassembleInstruction(binaryInstruction binInstruction) {
+	instruction outputInstruction;
+	opCode opCode;
+	int instructionType = instructionFromOpcode(opCode);
+
+	// First work out what kind of instruction it is
+
+
+	return outputInstruction;
+}
+
+//TODO: Implement a state and the map between instruction and function
 void emulation_loop(const char * inputBuffer, int inputLength) {
 	unsigned int programCounter;
-
-	binaryInstruction instruction;
+	instruction instruction;
+	binaryInstruction binaryInstruction;
 	for (programCounter=0; programCounter < inputLength;programCounter++ ) {
-		memcpy(&instruction, inputBuffer+programCounter, 4);
-		printInstruction(instruction);
+		memcpy(&binaryInstruction, inputBuffer+programCounter, 4);
+		printBinaryInstruction(binaryInstruction);
+		instruction = disassembleInstruction(binaryInstruction);
+
 	}
 }
 
