@@ -1,7 +1,7 @@
 #define FATAL_ERROR 10
 
 typedef unsigned char opCode;        // 8 bits to emulate 6 bit field
-typedef unsigned char registerIndex;  // 4 bits
+typedef unsigned char registerIndex;  // 8 bits to emulate 4 bit field
 typedef unsigned long address;    // 32 bits to emulate 26 bit field
 
 
@@ -15,14 +15,14 @@ typedef struct {
 	registerIndex dstRegIndex;  // destination register index
 	registerIndex src1RegIndex; // first source register index
 	registerIndex src2RegIndex; // second source register index
-	                            // 14 bits unused caused by the union
+	                            // 14 bits unused given by union padding
 }RTypeInstruction;
 
 typedef struct {
 	opCode opCode; 					 // opcode
 	registerIndex dstRegIndex;       // destination register index
 	registerIndex srcRegIndex;       // source register index
-	unsigned long intermidiateValue; // 16 bits for the intermediate value
+	unsigned short intermediateValue; // 16 bits for the intermediate value
 }ITypeInstruction;
 
 typedef struct {
@@ -41,7 +41,7 @@ typedef struct {
 	int verbose;
 }arguments;
 
-// Every instruction is 32 bits long, or 8 bytes
+// Every instruction is 32 bits long, or 4 bytes
 typedef struct {
 	char w0;
 	char w1;
