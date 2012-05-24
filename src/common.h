@@ -106,25 +106,25 @@ typedef struct {
 
 // TODO: Implement all
 // TODO: work out a decent state structure, and change "state"
-void doOpCode_HALT(char * args, state * state);
-void doOpCode_ADD (char * args, state * state);
-void doOpCode_ADDI(char * args, state * state);
-void doOpCode_SUB (char * args, state * state);
-void doOpCode_SUBI(char * args, state * state);
-void doOpCode_MUL (char * args, state * state);
-void doOpCode_MULI(char * args, state * state);
-void doOpCode_LW  (char * args, state * state);
-void doOpCode_SW  (char * args, state * state);
-void doOpCode_BEQ (char * args, state * state);
-void doOpCode_BNE (char * args, state * state);
-void doOpCode_BLT (char * args, state * state);
-void doOpCode_BGT (char * args, state * state);
-void doOpCode_BLE (char * args, state * state);
-void doOpCode_BGE (char * args, state * state);
-void doOpCode_JMP (char * args, state * state);
-void doOpCode_JR  (char * args, state * state);
-void doOpCode_JAL (char * args, state * state);
-void doOpCode_OUT (char * args, state * state);
+void doOpCode_HALT(instruction * args, state * state);
+void doOpCode_ADD (instruction * args, state * state);
+void doOpCode_ADDI(instruction * args, state * state);
+void doOpCode_SUB (instruction * args, state * state);
+void doOpCode_SUBI(instruction * args, state * state);
+void doOpCode_MUL (instruction * args, state * state);
+void doOpCode_MULI(instruction * args, state * state);
+void doOpCode_LW  (instruction * args, state * state);
+void doOpCode_SW  (instruction * args, state * state);
+void doOpCode_BEQ (instruction * args, state * state);
+void doOpCode_BNE (instruction * args, state * state);
+void doOpCode_BLT (instruction * args, state * state);
+void doOpCode_BGT (instruction * args, state * state);
+void doOpCode_BLE (instruction * args, state * state);
+void doOpCode_BGE (instruction * args, state * state);
+void doOpCode_JMP (instruction * args, state * state);
+void doOpCode_JR  (instruction * args, state * state);
+void doOpCode_JAL (instruction * args, state * state);
+void doOpCode_OUT (instruction * args, state * state);
 
 /**************************************************************
  * Map between Opcode, Instruction type, and a function pointer
