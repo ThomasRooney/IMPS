@@ -107,7 +107,13 @@ typedef struct {
 // TODO: Implement all
 // TODO: work out a decent state structure, and change "state"
 void doOpCode_HALT(instruction * args, state * state);
-void doOpCode_ADD (instruction * args, state * state);
+void doOpCode_ADD (instruction * args, state * state) {
+  args.RTypeInstruction.dstRegIndex = 
+  args.RTypeInstruction.dstRegIndex
+  
+
+}
+
 void doOpCode_ADDI(instruction * args, state * state);
 void doOpCode_SUB (instruction * args, state * state);
 void doOpCode_SUBI(instruction * args, state * state);
