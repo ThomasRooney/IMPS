@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include <string.h>
 
 // We want to read the file into memory so we can deal with it in a
@@ -77,38 +78,63 @@ int instructionFromOpcode(opCode opCode) {
 	return INSTRUCTION_TYPE_UNKNOWN;
 }
 
-
 //TODO: Implement
 instruction disassembleInstruction(binaryInstruction binInstruction) {
 	instruction outputInstruction;
 	opCode opCode;
+	// First 5 bits of any instruction is the opCode
+	opCode = readBitField(binInstruction,0, 5);
 	// Work out the type of the instruction, and thus data formatting
 	int instructionType = instructionFromOpcode(opCode);
 	if (instructionType == INSTRUCTION_TYPE_UNKNOWN) {
 		printf("Fatal Error: Unknown Instruction Type Read");
 		exit(EXIT_FAILURE);
 	}
-	if 
-	
-
-
+	switch(instructionType) {
+		case INSTRUCTION_TYPE_R:
+			outputInstruction.rType.dstRegIndex = (short)readBitField(binInstruction,6, 10);
+			outputInstruction.rType.src1RegIndex = (short)readBitField(binInstruction,11, 15);
+			outputInstruction.rType.src2RegIndex = (short)readBitField(binInstruction,16, 20);
+			break;
+		case INSTRUCTION_TYPE_I:
+			break;
+		case INSTRUCTION_TYPE_J:
+			break;
+			
+	}
+	long binInstructionAfterOpCode = (binInstruction<<5);
+	memcpy(&(outputInstruction.rType), &binInstructionAfterOpCode, sizeof(long));
 	return outputInstruction;
+}
+
+
+// Inclusive
+long readBitField(binaryInstruction bin,unsigned char start, unsigned char end, long out)
+{
+	long mask = pow(2, end-start)-1>>start;
+	return bin & mask;
 }
 
 //TODO: Implement a state and the map between instruction and function
 void emulation_loop(const char * inputBuffer, int inputLength) {
-	unsigned int programCounter;
 	instruction instruction;
 	binaryInstruction binaryInstruction;
-	for (programCounter=0; programCounter < inputLength;programCounter++ ) {
+	state state = initialise_state()
+	while (1) {
 		memcpy(&binaryInstruction, inputBuffer+programCounter, 4);
 		printBinaryInstruction(binaryInstruction);
 		instruction = disassembleInstruction(binaryInstruction);
-
+		instruction.
 	}
 }
 
-
+state initialise_state(void) { 
+	state virtualState;
+	memset(virtualState.reg, 0, sizeof(virtualState.reg));
+	virtualState.MEMORY = calloc(MEMORY_SIZE, sizeof(long));
+	// allocate 65535 addresses with 32 bit boundary.
+	return virtualState;
+}
 
 
 
@@ -156,7 +182,7 @@ int main(int argc, char **argv) {
 	}
 
 	main_args.file_name = argv[1];
-
+ 
 	if (argc > 2) {
 		for (iter=2; iter < argc; iter++) {
 			if(strcmp(argv[iter],"-v") == 0) {

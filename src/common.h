@@ -1,4 +1,6 @@
 #define FATAL_ERROR 10
+#define MEMORY_SIZE 65535
+
 
 typedef unsigned char opCode;        // 8 bits to emulate 6 bit field
 typedef unsigned char registerIndex;  // 8 bits to emulate 4 bit field
@@ -8,30 +10,36 @@ typedef unsigned long address;    // 32 bits to emulate 26 bit field
 /**************************************************************
  * Instructions
  */
+ 
+#pragma pack(4)
 typedef struct {
-	opCode opCode;              // opcode
 	registerIndex dstRegIndex;  // destination register index
 	registerIndex src1RegIndex; // first source register index
 	registerIndex src2RegIndex; // second source register index
-	
 }RTypeInstruction;
 
+
+#pragma pack(4)
 typedef struct {
-	opCode opCode; 					 // opcode
 	registerIndex dstRegIndex;       // destination register index
 	registerIndex srcRegIndex;       // source register index
 	unsigned short intermediateValue; // 16 bits for the intermediate value
 }ITypeInstruction;
 
-typedef struct {
-	 opCode opCode;
+
+#pragma pack(4)
+typedef struct {;
 	 address immediateAddress;
 }JTypeInstruction;
 
-typedef union {
-	RTypeInstruction rType;
-	ITypeInstruction iType;
-	JTypeInstruction jType;
+#pragma pack(4)
+typedef struct {
+	opCode opCode;
+	union {
+		RTypeInstruction rType;
+		ITypeInstruction iType;
+		JTypeInstruction jType;
+	};
 }instruction;
 
 typedef struct {
@@ -110,10 +118,12 @@ typedef enum opCodeDef {
  * State information containing registers for emulation
  */
 
-typedef struct state { 
+
+typedef struct { 
   unsigned long reg [32];
-  char * MEMORY;
-}
+  long * MEMORY;
+  unsigned int programCounter;
+}state;
  
  
 
