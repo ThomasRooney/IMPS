@@ -176,7 +176,7 @@ void dump_state(state curState) {
 	fprintf(stderr, "PROGRAM_HALTED\n--------------\n\
 					ProgramCounter: %i\n", state.programCounter);
 	for (int i = 0; i < MAX_REGISTERS; i++) {
-		fprintf(stderr, "Register[%i]: ", i, state.reg[i]);
+		fprintf(stderr, "Register[%i]: \n", i, state.reg[i]);
 	}
 }
 
