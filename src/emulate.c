@@ -13,6 +13,7 @@
 /**************************************************************************
 * Callback functions for opcode operations
 */
+int const int_conversion = 4;
 
 void doOpCode_HALT(instruction * args, state * state)
 
@@ -23,7 +24,7 @@ void doOpCode_ADD (instruction * args, state * state) {
 
 void doOpCode_ADDI(instruction * args, state * state) {
   state.reg[args.ITypeInstruction.dstRegIndex] =
-  state.reg[args.ITypeInstruction.srcRegIndex] + args.ITypeInstruction.intermediateValue; //considering we can add short to long
+  state.reg[args.ITypeInstruction.srcRegIndex] + args.ITypeInstruction.intermediateValue; //considering we can operate on short to long
 }
 
 void doOpCode_SUB (instruction * args, state * state) {
@@ -33,7 +34,7 @@ void doOpCode_SUB (instruction * args, state * state) {
 
 void doOpCode_SUBI(instruction * args, state * state) {
   state.reg[args.ITypeInstruction.dstRegIndex] = 
-  state.reg[args.ITypeInstruction.srcRegIndex] - args.ITypeInstruction.intermediateValue; //considering we can add short to long
+  state.reg[args.ITypeInstruction.srcRegIndex] - args.ITypeInstruction.intermediateValue; //considering we can operate on short to long
 }
 
 void doOpCode_MUL (instruction * args, state * state) {
@@ -41,27 +42,71 @@ void doOpCode_MUL (instruction * args, state * state) {
   state.reg[args.RTypeInstruction.src1RegIndex] * state.reg[args.RTypeInstruction.src2RegIndex];
 }
 
-void doOpCode_MULI(instruction * args, state * state){
+void doOpCode_MULI(instruction * args, state * state) {
   state.reg[args.ITypeInstruction.dstRegIndex] = 
-  state.reg[args.ITypeInstruction.srcRegIndex] * args.ITypeInstruction.intermediateValue; //considering we can add short to long
+  state.reg[args.ITypeInstruction.srcRegIndex] * args.ITypeInstruction.intermediateValue; //considering we can operate on short to long
 }
 
-void doOpCode_LW  (instruction * args, state * state){
+void doOpCode_LW  (instruction * args, state * state) {
   state.reg[args.ITypeInstruction.dstRegIndex] = 
-  state.MEMORY[state.reg[args.ITypeInstruction.srcRegIndex] + intermediateValue]]
+  state.MEMORY[state.reg[args.ITypeInstruction.srcRegIndex] + intermediateValue]];
 }
 
-void doOpCode_SW  (instruction * args, state * state);
-void doOpCode_BEQ (instruction * args, state * state);
-void doOpCode_BNE (instruction * args, state * state);
-void doOpCode_BLT (instruction * args, state * state);
-void doOpCode_BGT (instruction * args, state * state);
-void doOpCode_BLE (instruction * args, state * state);
-void doOpCode_BGE (instruction * args, state * state);
-void doOpCode_JMP (instruction * args, state * state);
-void doOpCode_JR  (instruction * args, state * state);
-void doOpCode_JAL (instruction * args, state * state);
-void doOpCode_OUT (instruction * args, state * state);
+void doOpCode_SW  (instruction * args, state * state) {
+  state.MEMORY[state.reg[args.ITypeInstruction.srcRegIndex] + intermediateValue]] =
+  state.reg[args.ITypeInstruction.dstRegindex];
+}
+
+void doOpCode_BEQ (instruction * args, state * state) {
+  if (state.reg[args.ITypeInstruction.dstRegIndex] == state.reg[args.ITypeInstruction.srcRegIndex]) {
+    programCount += (args.ITypeInstruction.intermediateValue * int_conversion); 
+  }
+}
+
+void doOpCode_BNE (instruction * args, state * state) {
+  if (state.reg[args.ITypeInstruction.dstRegIndex] != state.reg[args.ITypeInstruction.srcRegIndex]) {
+    programCount += (args.ITypeInstruction.intermediateValue * int_conversion); 
+  }
+}
+
+void doOpCode_BLT (instruction * args, state * state) {
+  if (state.reg[args.ITypeInstruction.dstRegIndex] < state.reg[args.ITypeInstruction.srcRegIndex]) {
+    programCount += (args.ITypeInstruction.intermediateValue * int_conversion); 
+  }
+}
+
+void doOpCode_BGT (instruction * args, state * state) {
+  if (state.reg[args.ITypeInstruction.dstRegIndex] > state.reg[args.ITypeInstruction.srcRegIndex]) {
+    programCount += (args.ITypeInstruction.intermediateValue * int_conversion); 
+  }
+}
+
+void doOpCode_BLE (instruction * args, state * state) {
+  if (state.reg[args.ITypeInstruction.dstRegIndex] <= state.reg[args.ITypeInstruction.srcRegIndex]) {
+    programCount += (args.ITypeInstruction.intermediateValue * int_conversion); 
+  }
+}
+
+void doOpCode_BGE (instruction * args, state * state) {
+  if (state.reg[args.ITypeInstruction.dstRegIndex] >= state.reg[args.ITypeInstruction.srcRegIndex]) {
+    programCount += (args.ITypeInstruction.intermediateValue * int_conversion); 
+  }
+}
+
+void doOpCode_JMP (instruction * args, state * state) {
+  programCounter = args.JTypeInstruction.immediateAddress;
+}
+
+void doOpCode_JR  (instruction * args, state * state) {
+  programCounter = args.RTypeInstruction.dstRegIndex;
+}
+
+void doOpCode_JAL (instruction * args, state * state) {
+  
+}
+
+void doOpCode_OUT (instruction * args, state * state) {
+  printf("%i", args.reg[RtypeInstruction.srcRegIndex]);
 
 
 void printBinaryInstruction(binaryInstruction instruction) {
