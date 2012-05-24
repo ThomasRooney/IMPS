@@ -90,6 +90,15 @@ typedef enum opCodeDef {
 	OPCODE_OUT = 18,
 	NUMBER_OF_OPCODES = 19
 }opCodeDef;
+/**************************************************************
+ * State information containing registers for emulation
+ */
+
+typedef struct { 
+	unsigned long reg [32]
+}state;
+
+
 
 /**************************************************************
  * Function Pointers for Opcode emulation
