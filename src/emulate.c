@@ -9,6 +9,60 @@
 // faster and easier way
 
 
+/**************************************************************************
+* Callback functions for opcode operations
+*/
+
+void doOpCode_HALT(instruction * args, state * state)
+
+void doOpCode_ADD (instruction * args, state * state) {
+  state.reg[args.RTypeInstruction.dstRegIndex] = 
+  state.reg[args.RTypeInstruction.src1RegIndex] + state.reg[args.RTypeInstruction.src2RegIndex];
+}
+
+void doOpCode_ADDI(instruction * args, state * state) {
+  state.reg[args.ITypeInstruction.dstRegIndex] =
+  state.reg[args.ITypeInstruction.srcRegIndex] + args.ITypeInstruction.intermediateValue; //considering we can add short to long
+}
+
+void doOpCode_SUB (instruction * args, state * state) {
+  state.reg[args.RTypeInstruction.dstRegIndex] =
+  state.reg[args.RTypeInstruction.src1Regindex] - state.reg[args.Rtypeinstruction.src2RegIndex];
+}
+
+void doOpCode_SUBI(instruction * args, state * state) {
+  state.reg[args.ITypeInstruction.dstRegIndex] = 
+  state.reg[args.ITypeInstruction.srcRegIndex] - args.ITypeInstruction.intermediateValue; //considering we can add short to long
+}
+
+void doOpCode_MUL (instruction * args, state * state) {
+  state.reg[args.RTypeInstruction.dstRegIndex] = 
+  state.reg[args.RTypeInstruction.src1RegIndex] * state.reg[args.RTypeInstruction.src2RegIndex];
+}
+
+void doOpCode_MULI(instruction * args, state * state){
+  state.reg[args.ITypeInstruction.dstRegIndex] = 
+  state.reg[args.ITypeInstruction.srcRegIndex] * args.ITypeInstruction.intermediateValue; //considering we can add short to long
+}
+
+void doOpCode_LW  (instruction * args, state * state){
+  state.reg[args.ITypeInstruction.dstRegIndex] = 
+  state.MEMORY[state.reg[args.ITypeInstruction.srcRegIndex] + intermediateValue]]
+}
+
+void doOpCode_SW  (instruction * args, state * state);
+void doOpCode_BEQ (instruction * args, state * state);
+void doOpCode_BNE (instruction * args, state * state);
+void doOpCode_BLT (instruction * args, state * state);
+void doOpCode_BGT (instruction * args, state * state);
+void doOpCode_BLE (instruction * args, state * state);
+void doOpCode_BGE (instruction * args, state * state);
+void doOpCode_JMP (instruction * args, state * state);
+void doOpCode_JR  (instruction * args, state * state);
+void doOpCode_JAL (instruction * args, state * state);
+void doOpCode_OUT (instruction * args, state * state);
+
+
 void printBinaryInstruction(binaryInstruction instruction) {
 	int i;
 	for (i = 0; i < 32; ++i) { printf("%i",(instruction >> i) & 1); }
