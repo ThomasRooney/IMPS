@@ -105,26 +105,26 @@ typedef struct {
  */
 
 // TODO: Implement all
-// TODO: work out a decent state structure, and change "void *"
-void doOpCode_HALT(char * args, void * state);
-void doOpCode_ADD (char * args, void * state);
-void doOpCode_ADDI(char * args, void * state);
-void doOpCode_SUB (char * args, void * state);
-void doOpCode_SUBI(char * args, void * state);
-void doOpCode_MUL (char * args, void * state);
-void doOpCode_MULI(char * args, void * state);
-void doOpCode_LW  (char * args, void * state);
-void doOpCode_SW  (char * args, void * state);
-void doOpCode_BEQ (char * args, void * state);
-void doOpCode_BNE (char * args, void * state);
-void doOpCode_BLT (char * args, void * state);
-void doOpCode_BGT (char * args, void * state);
-void doOpCode_BLE (char * args, void * state);
-void doOpCode_BGE (char * args, void * state);
-void doOpCode_JMP (char * args, void * state);
-void doOpCode_JR  (char * args, void * state);
-void doOpCode_JAL (char * args, void * state);
-void doOpCode_OUT (char * args, void * state);
+// TODO: work out a decent state structure, and change "state"
+void doOpCode_HALT(char * args, state * state);
+void doOpCode_ADD (char * args, state * state);
+void doOpCode_ADDI(char * args, state * state);
+void doOpCode_SUB (char * args, state * state);
+void doOpCode_SUBI(char * args, state * state);
+void doOpCode_MUL (char * args, state * state);
+void doOpCode_MULI(char * args, state * state);
+void doOpCode_LW  (char * args, state * state);
+void doOpCode_SW  (char * args, state * state);
+void doOpCode_BEQ (char * args, state * state);
+void doOpCode_BNE (char * args, state * state);
+void doOpCode_BLT (char * args, state * state);
+void doOpCode_BGT (char * args, state * state);
+void doOpCode_BLE (char * args, state * state);
+void doOpCode_BGE (char * args, state * state);
+void doOpCode_JMP (char * args, state * state);
+void doOpCode_JR  (char * args, state * state);
+void doOpCode_JAL (char * args, state * state);
+void doOpCode_OUT (char * args, state * state);
 
 /**************************************************************
  * Map between Opcode, Instruction type, and a function pointer
@@ -132,11 +132,28 @@ void doOpCode_OUT (char * args, void * state);
 const opCodeDef       opCodeDefinition;
 const instructionType instructionTypeDefinition;
 // TODO: fill in
-//void * opCodeDictionary [0] [3] = { \
-//\
-//{(void *)(&opCodeDefinition.OPCODE_HALT), (void *)(&instructionTypeDefinition.INSTRUCTION_TYPE_NA),(void *)(&doOpCode_HALT)}\
-//\
-//};
+void * opCodeDictionary [opCodeDefinition.NUMBER_OF_OPCODES] = 
+{
+	&doOpCode_HALT,
+	&doOpCode_ADD ,
+	&doOpCode_ADDI,
+	&doOpCode_SUB ,
+	&doOpCode_SUBI,
+	&doOpCode_MUL ,
+	&doOpCode_MULI,
+	&doOpCode_LW  ,
+	&doOpCode_SW  ,
+	&doOpCode_BEQ ,
+	&doOpCode_BNE ,
+	&doOpCode_BLT ,
+	&doOpCode_BGT ,
+	&doOpCode_BLE ,
+	&doOpCode_BGE ,
+	&doOpCode_JMP ,
+	&doOpCode_JR  ,
+	&doOpCode_JAL ,
+	&doOpCode_OUT 
+};
 
 
 
