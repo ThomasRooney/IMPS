@@ -13,7 +13,7 @@ typedef struct {
 	registerIndex dstRegIndex;  // destination register index
 	registerIndex src1RegIndex; // first source register index
 	registerIndex src2RegIndex; // second source register index
-	char padding[1];            // 14 bits unused (16 emulated)
+	
 }RTypeInstruction;
 
 typedef struct {
@@ -40,12 +40,7 @@ typedef struct {
 }arguments;
 
 // Every instruction is 32 bits long, or 4 bytes
-typedef struct {
-	char w0;
-	char w1;
-	char w2;
-	char w3;
-}binaryInstruction;
+typedef long binaryInstruction;
 
 arguments main_args;
 
@@ -57,13 +52,34 @@ arguments main_args;
 /**************************************************************
  * Instruction Type Definitions
  */
-typedef enum instructionType {
-	INSTRUCTION_TYPE_UNKNOWN  = 0,
-	INSTRUCTION_TYPE_R        = 1,
-	INSTRUCTION_TYPE_I        = 2,
-	INSTRUCTION_TYPE_J        = 3,
-	INSTRUCTION_TYPE_NA       = 4
-}instructionType;
+ const int INSTRUCTION_TYPE_UNKNOWN   = 0;
+ const int INSTRUCTION_TYPE_R         = 1;
+ const int INSTRUCTION_TYPE_I         = 2;
+ const int INSTRUCTION_TYPE_J         = 3;
+ const int	INSTRUCTION_TYPE_NA       = 4;
+ 
+ 
+const int instructionType [NUMBER_OF_OPCODES]{
+	INSTRUCTION_TYPE_NA, 
+	INSTRUCTION_TYPE_R,
+	INSTRUCTION_TYPE_I,
+	INSTRUCTION_TYPE_R,
+	INSTRUCTION_TYPE_I,
+	INSTRUCTION_TYPE_R,
+	INSTRUCTION_TYPE_I,
+	INSTRUCTION_TYPE_I,
+	INSTRUCTION_TYPE_I,
+	INSTRUCTION_TYPE_I,
+	INSTRUCTION_TYPE_I,
+	INSTRUCTION_TYPE_I,
+	INSTRUCTION_TYPE_I,
+	INSTRUCTION_TYPE_I,
+	INSTRUCTION_TYPE_I,
+	INSTRUCTION_TYPE_J,
+	INSTRUCTION_TYPE_R,
+	INSTRUCTION_TYPE_J,
+	INSTRUCTION_TYPE_R
+};
 
 /**************************************************************
  * OpCode Definitions
@@ -94,9 +110,12 @@ typedef enum opCodeDef {
  * State information containing registers for emulation
  */
 
-typedef struct { 
-	unsigned long reg [32]
-}state;
+typedef struct state { 
+  unsigned long reg [32];
+  char * MEMORY;
+}
+ 
+ 
 
 
 
@@ -130,8 +149,6 @@ void doOpCode_OUT (instruction * args, state * state);
  * Map between Opcode, Instruction type, and a function pointer
  */
 const opCodeDef       opCodeDefinition;
-const instructionType instructionTypeDefinition;
-// TODO: fill in
 void * opCodeDictionary [opCodeDefinition.NUMBER_OF_OPCODES] = 
 {
 	&doOpCode_HALT,

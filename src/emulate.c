@@ -1,4 +1,5 @@
 #include "common.h"
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,15 +11,15 @@
 
 void printBinaryInstruction(binaryInstruction instruction) {
 	int i;
-	for (i = 0; i < 8; ++i) { printf("%i",(instruction.w0 >> i) & 1); }
-	for (i = 0; i < 8; ++i) { printf("%i",(instruction.w1 >> i) & 1); }
-	for (i = 0; i < 8; ++i) { printf("%i",(instruction.w2 >> i) & 1); }
-	for (i = 0; i < 8; ++i) { printf("%i",(instruction.w3 >> i) & 1); }
+	for (i = 0; i < 32; ++i) { printf("%i",(instruction >> i) & 1); }
 	printf("\n");
 }
 
 //TODO: Implement
 int instructionFromOpcode(opCode opCode) {
+	if (opCode < opCodeDefinition.NUMBER_OF_OPCODES) {
+		return instructionType [opCode];
+	}
 	return INSTRUCTION_TYPE_UNKNOWN;
 }
 
@@ -27,9 +28,14 @@ int instructionFromOpcode(opCode opCode) {
 instruction disassembleInstruction(binaryInstruction binInstruction) {
 	instruction outputInstruction;
 	opCode opCode;
+	// Work out the type of the instruction, and thus data formatting
 	int instructionType = instructionFromOpcode(opCode);
-
-	// First work out what kind of instruction it is
+	if (instructionType == INSTRUCTION_TYPE_UNKNOWN) {
+		printf("Fatal Error: Unknown Instruction Type Read");
+		exit(EXIT_FAILURE);
+	}
+	if 
+	
 
 
 	return outputInstruction;
