@@ -1,6 +1,7 @@
 #define FATAL_ERROR 10
 #define MEMORY_SIZE 65535
-
+#define MAX_REGISTERS 32
+#define PC_BOUNDARY 4
 
 typedef unsigned char opCode;        // 8 bits to emulate 6 bit field
 typedef unsigned char registerIndex;  // 8 bits to emulate 4 bit field

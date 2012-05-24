@@ -16,6 +16,7 @@
 int const int_conversion = 4;
 
 void doOpCode_HALT(instruction * args, state * state)
+{}
 
 void doOpCode_ADD (instruction * args, state * state) {
   state.reg[args.RTypeInstruction.dstRegIndex] = 
@@ -115,7 +116,6 @@ void printBinaryInstruction(binaryInstruction instruction) {
 	printf("\n");
 }
 
-//TODO: Implement
 int instructionFromOpcode(opCode opCode) {
 	if (opCode < opCodeDefinition.NUMBER_OF_OPCODES) {
 		return instructionType [opCode];
@@ -123,7 +123,6 @@ int instructionFromOpcode(opCode opCode) {
 	return INSTRUCTION_TYPE_UNKNOWN;
 }
 
-//TODO: Implement
 instruction disassembleInstruction(binaryInstruction binInstruction) {
 	instruction outputInstruction;
 	opCode opCode;
@@ -133,17 +132,21 @@ instruction disassembleInstruction(binaryInstruction binInstruction) {
 	int instructionType = instructionFromOpcode(opCode);
 	if (instructionType == INSTRUCTION_TYPE_UNKNOWN) {
 		printf("Fatal Error: Unknown Instruction Type Read");
-		exit(EXIT_FAILURE);
+		exit(EXIT_FAILURE); 
 	}
 	switch(instructionType) {
 		case INSTRUCTION_TYPE_R:
-			outputInstruction.rType.dstRegIndex = (short)readBitField(binInstruction,6, 10);
-			outputInstruction.rType.src1RegIndex = (short)readBitField(binInstruction,11, 15);
-			outputInstruction.rType.src2RegIndex = (short)readBitField(binInstruction,16, 20);
+			outputInstruction.rType.R1 = (short)readBitField(binInstruction,6, 10);
+			outputInstruction.rType.R2 = (short)readBitField(binInstruction,11, 15);
+			outputInstruction.rType.R3 = (short)readBitField(binInstruction,16, 20);
 			break;
 		case INSTRUCTION_TYPE_I:
+			outputInstruction.iType.R1 = (short)readBitField(binInstruction,6, 10);
+			outputInstruction.iType.R2 = (short)readBitField(binInstruction,11, 15);
+			outputInstruction.iType.immediateValue = (short)readBitField(binInstruction,16, 31);
 			break;
 		case INSTRUCTION_TYPE_J:
+			outputInstruction.jType.address = (short)readBitField(binInstruction,6, 10);
 			break;
 			
 	}
@@ -160,22 +163,36 @@ long readBitField(binaryInstruction bin,unsigned char start, unsigned char end, 
 	return bin & mask;
 }
 
+void dump_state(state curState) {
+	fprintf(stderr, "PROGRAM_HALTED\n--------------\n\
+					ProgramCounter: %i\n", state.programCounter);
+	for (int i = 0; i < MAX_REGISTERS; i++) {
+		fprintf(stderr, "Register[%i]: ", i, state.reg[i]);
+	}
+}
+
 //TODO: Implement a state and the map between instruction and function
 void emulation_loop(const char * inputBuffer, int inputLength) {
 	instruction instruction;
 	binaryInstruction binaryInstruction;
 	state state = initialise_state()
-	while (1) {
-		memcpy(&binaryInstruction, inputBuffer+programCounter, 4);
+	state stateOld;
+	// Whilst state is changing every iteration
+	do {
+		memcpy(&stateOld, &state, sizeof(state));
+		memcpy(&binaryInstruction, inputBuffer+state.programCounter, 4);
 		printBinaryInstruction(binaryInstruction);
 		instruction = disassembleInstruction(binaryInstruction);
-		instruction.
-	}
+		opCodeDictionary[instruction.opCode](&instruction, &state);
+	} while (memcmp(&state,&stateold,sizeof(state) != 0)
+	// Dump PC and registers into stderr
+	dump_state(state);
 }
 
 state initialise_state(void) { 
 	state virtualState;
 	memset(virtualState.reg, 0, sizeof(virtualState.reg));
+	state.programCounter = 0;
 	virtualState.MEMORY = calloc(MEMORY_SIZE, sizeof(long));
 	// allocate 65535 addresses with 32 bit boundary.
 	return virtualState;
