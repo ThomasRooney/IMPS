@@ -14,23 +14,23 @@ typedef unsigned long address;    // 32 bits to emulate 26 bit field
  
 #pragma pack(4)
 typedef struct {
-	registerIndex dstRegIndex;  // destination register index
-	registerIndex src1RegIndex; // first source register index
-	registerIndex src2RegIndex; // second source register index
+	registerIndex R1;  // destination register index
+	registerIndex R2; // first source register index
+	registerIndex R3; // second source register index
 }RTypeInstruction;
 
 
 #pragma pack(4)
 typedef struct {
-	registerIndex dstRegIndex;       // destination register index
-	registerIndex srcRegIndex;       // source register index
-	unsigned short intermediateValue; // 16 bits for the intermediate value
+	registerIndex R1;       // destination register index
+	registerIndex R2;       // source register index
+	unsigned short immediateValue; // 16 bits for the intermediate value
 }ITypeInstruction;
 
 
 #pragma pack(4)
 typedef struct {;
-	 address immediateAddress;
+	 address address;
 }JTypeInstruction;
 
 #pragma pack(4)
@@ -137,13 +137,7 @@ typedef struct {
 // TODO: Implement all
 // TODO: work out a decent state structure, and change "state"
 void doOpCode_HALT(instruction * args, state * state);
-void doOpCode_ADD (instruction * args, state * state) {
-  args.RTypeInstruction.dstRegIndex = 
-  args.RTypeInstruction.dstRegIndex
-  
-
-}
-
+void doOpCode_ADD (instruction * args, state * state);
 void doOpCode_ADDI(instruction * args, state * state);
 void doOpCode_SUB (instruction * args, state * state);
 void doOpCode_SUBI(instruction * args, state * state);
