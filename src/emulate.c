@@ -17,105 +17,105 @@ void doOpCode_HALT(instruction * args, state * state)
 {}
 
 void doOpCode_ADD (instruction * args, state * state) {
-  state.reg[args.rType.R1] = 
-  state.reg[args.rType.R2] + state.reg[args.rType.R3];
-  programCounter += PC_BOUNDARY;
+  state->reg[args->rType.R1] =
+  state->reg[args->rType.R2] + state->reg[args->rType.R3];
+  state->programCounter += PC_BOUNDARY;
 }
 
 void doOpCode_ADDI(instruction * args, state * state) {
-  state.reg[args.ITypeInstruction.R1] =
-  state.reg[args.ITypeInstruction.R2] + args.ITypeInstruction.immediateValue; //considering we can operate on short to long
-  programCounter += PC_BOUNDARY;
+  state->reg[args->iType.R1] =
+  state->reg[args->iType.R2] + args->iType.immediateValue; //considering we can operate on short to long
+  state->programCounter += PC_BOUNDARY;
 }
 
 void doOpCode_SUB (instruction * args, state * state) {
-  state.reg[args.rType.R1] =
-  state.reg[args.rType.R2] - state.reg[args.rType.R3];
-  programCounter += PC_BOUNDARY;
+  state->reg[args->rType.R1] =
+  state->reg[args->rType.R2] - state->reg[args->rType.R3];
+  state->programCounter += PC_BOUNDARY;
 }
 
 void doOpCode_SUBI(instruction * args, state * state) {
-  state.reg[args.ITypeInstruction.R1] = 
-  state.reg[args.ITypeInstruction.R2] - args.ITypeInstruction.immediateValue; //considering we can operate on short to long
-  programCounter += PC_BOUNDARY;
+  state->reg[args->iType.R1] =
+  state->reg[args->iType.R2] - args->iType.immediateValue; //considering we can operate on short to long
+  state->programCounter += PC_BOUNDARY;
 }
 
 void doOpCode_MUL (instruction * args, state * state) {
-  state.reg[args.rType.R1] = 
-  state.reg[args.rType.R2] * state.reg[args.rType.R3];
-  programCounter += PC_BOUNDARY;
+  state->reg[args->rType.R1] =
+  state->reg[args->rType.R2] * state->reg[args->rType.R3];
+  state->programCounter += PC_BOUNDARY;
 }
 
 void doOpCode_MULI(instruction * args, state * state) {
-  state.reg[args.ITypeInstruction.R1] = 
-  state.reg[args.ITypeInstruction.R2] * args.ITypeInstruction.immediateValue; //considering we can operate on short to long
-  programCounter += PC_BOUNDARY;
+  state->reg[args->iType.R1] =
+  state->reg[args->iType.R2] * args->iType.immediateValue; //considering we can operate on short to long
+  state->programCounter += PC_BOUNDARY;
 }
 
 void doOpCode_LW  (instruction * args, state * state) {
-  state.reg[args.ITypeInstruction.R1] = 
-  state.MEMORY[state.reg[args.ITypeInstruction.R2] + immediateValue]];
-  programCounter += PC_BOUNDARY;
+  state->reg[args->iType.R1] =
+  state->MEMORY[state->reg[args->iType.R2] + args->iType.immediateValue];
+  state->programCounter += PC_BOUNDARY;
 }
 
 void doOpCode_SW  (instruction * args, state * state) {
-  state.MEMORY[state.reg[args.ITypeInstruction.R2] + immediateValue]] =
-  state.reg[args.ITypeInstruction.R1];
-  programCounter += PC_BOUNDARY;
+  state->MEMORY[state->reg[args->iType.R2] + args->iType.immediateValue] =
+  state->reg[args->iType.R1];
+  state->programCounter += PC_BOUNDARY;
 }
 
 void doOpCode_BEQ (instruction * args, state * state) {
-  if (state.reg[args.ITypeInstruction.R1] == state.reg[args.ITypeInstruction.R2]) {
-    state.programCounter += (args.ITypeInstruction.immediateValue * PC_BOUNDARY); 
+  if (state->reg[args->iType.R1] == state->reg[args->iType.R2]) {
+    state->programCounter += (args->iType.immediateValue * PC_BOUNDARY);
   }
 }
 
 void doOpCode_BNE (instruction * args, state * state) {
-  if (state.reg[args.ITypeInstruction.R1] != state.reg[args.ITypeInstruction.R2]) {
-    state.programCounter += (args.ITypeInstruction.immediateValue * PC_BOUNDARY); 
+  if (state->reg[args->iType.R1] != state->reg[args->iType.R2]) {
+    state->programCounter += (args->iType.immediateValue * PC_BOUNDARY);
   }
 }
 
 void doOpCode_BLT (instruction * args, state * state) {
-  if (state.reg[args.ITypeInstruction.R1] < state.reg[args.ITypeInstruction.R2]) {
-    state.programCounter += (args.ITypeInstruction.immediateValue * PC_BOUNDARY); 
+  if (state->reg[args->iType.R1] < state->reg[args->iType.R2]) {
+    state->programCounter += (args->iType.immediateValue * PC_BOUNDARY);
   }
 }
 
 void doOpCode_BGT (instruction * args, state * state) {
-  if (state.reg[args.ITypeInstruction.R1] > state.reg[args.ITypeInstruction.R2]) {
-    state.programCounter += (args.ITypeInstruction.immediateValue * PC_BOUNDARY); 
+  if (state->reg[args->iType.R1] > state->reg[args->iType.R2]) {
+    state->programCounter += (args->iType.immediateValue * PC_BOUNDARY);
   }
 }
 
 void doOpCode_BLE (instruction * args, state * state) {
-  if (state.reg[args.ITypeInstruction.R1] <= state.reg[args.ITypeInstruction.R2]) {
-    state.programCounter += (args.ITypeInstruction.immediateValue * PC_BOUNDARY); 
+  if (state->reg[args->iType.R1] <= state->reg[args->iType.R2]) {
+    state->programCounter += (args->iType.immediateValue * PC_BOUNDARY);
   }
 }
 
 void doOpCode_BGE (instruction * args, state * state) {
-  if (state.reg[args.ITypeInstruction.R1] >= state.reg[args.ITypeInstruction.R2]) {
-    state.programCounter += (args.ITypeInstruction.immediateValue * PC_BOUNDARY); 
+  if (state->reg[args->iType.R1] >= state->reg[args->iType.R2]) {
+    state->programCounter += (args->iType.immediateValue * PC_BOUNDARY);
   }
 }
 
 void doOpCode_JMP (instruction * args, state * state) {
-  state.programCounter = args.JTypeInstruction.address;
+  state->programCounter = args->jType.address;
 }
 
 void doOpCode_JR  (instruction * args, state * state) {
-  state.programCounter = args.rType.R1;
+  state->programCounter = args->rType.R1;
 }
 
 void doOpCode_JAL (instruction * args, state * state) {
-  state.reg[31] = state.programCounter + PC_BOUNDARY;
-  state.programCounter = args.JtypeInstruction.address; 
+  state->reg[31] = state->programCounter + PC_BOUNDARY;
+  state->programCounter = args->jType.address;
 }
 
 void doOpCode_OUT (instruction * args, state * state) {
-  printf("%i", args.reg[rType.R1]);
-  programCounter += PC_BOUNDARY;
+  printf("%i", state->reg[args->rType.R1]);
+  state->programCounter += PC_BOUNDARY;
 }
 
 
@@ -126,10 +126,17 @@ void printBinaryInstruction(binaryInstruction instruction) {
 }
 
 int instructionFromOpcode(opCode opCode) {
-	if (opCode < opCodeDefinition.NUMBER_OF_OPCODES) {
+	if (opCode < NUMBER_OF_OPCODES) {
 		return instructionType [opCode];
 	}
 	return INSTRUCTION_TYPE_UNKNOWN;
+}
+
+// Inclusive
+long readBitField(binaryInstruction bin,unsigned char start, unsigned char end)
+{
+	long mask = (long)(pow(2, (long)(end-start))-1)>>start;
+	return (long)(bin & mask);
 }
 
 instruction disassembleInstruction(binaryInstruction binInstruction) {
@@ -165,47 +172,51 @@ instruction disassembleInstruction(binaryInstruction binInstruction) {
 }
 
 
-// Inclusive
-long readBitField(binaryInstruction bin,unsigned char start, unsigned char end, long out)
-{
-	long mask = pow(2, end-start)-1>>start;
-	return bin & mask;
-}
+
 
 void dump_state(state curState) {
+	int i;
 	fprintf(stderr, "PROGRAM_HALTED\n--------------\n\
-					ProgramCounter: %i\n", state.programCounter);
-	for (int i = 0; i < MAX_REGISTERS; i++) {
-		fprintf(stderr, "Register[%i]: \n", i, state.reg[i]);
+					ProgramCounter: %i\n", curState.programCounter);
+	for (i = 0; i < MAX_REGISTERS; i++) {
+		fprintf(stderr, "Register[%i]: %i\n", i, curState.reg[i]);
 	}
 }
 
-//TODO: Implement a state and the map between instruction and function
-void emulation_loop(const char * inputBuffer, int inputLength) {
-	instruction instruction;
-	binaryInstruction binaryInstruction;
-	state state = initialise_state()
-	state stateOld;
-	// Whilst state is changing every iteration
-	do {
-		memcpy(&stateOld, &state, sizeof(state));
-		memcpy(&binaryInstruction, inputBuffer+state.programCounter, 4);
-		printBinaryInstruction(binaryInstruction);
-		instruction = disassembleInstruction(binaryInstruction);
-		opCodeDictionary[instruction.opCode](&instruction, &state);
-	} while (memcmp(&state,&stateold,sizeof(state) != 0)
-	// Dump PC and registers into stderr
-	dump_state(state);
-}
-
-state initialise_state(void) { 
+state initialise_state(void) {
 	state virtualState;
 	memset(virtualState.reg, 0, sizeof(virtualState.reg));
-	state.programCounter = 0;
+	virtualState.programCounter = 0;
 	virtualState.MEMORY = calloc(MEMORY_SIZE, sizeof(long));
 	// allocate 65535 addresses with 32 bit boundary.
 	return virtualState;
 }
+
+//TODO: Implement a state and the map between instruction and function
+void emulation_loop(const char * inputBuffer, int inputLength) {
+	instruction parsedInstruction;
+	binaryInstruction binaryInstruction;
+	void (*opCodeFunction)(instruction *, state *);
+	state stateOld;
+	state state = initialise_state();
+
+
+	// Whilst state is changing every iteration, else something's gone wrong
+	do
+	{
+		memcpy(&stateOld, &state, sizeof(state));
+		memcpy(&binaryInstruction, inputBuffer+state.programCounter, 4);
+		printBinaryInstruction(binaryInstruction);
+		parsedInstruction = disassembleInstruction(binaryInstruction);
+		opCodeFunction = (opCodeDictionary[parsedInstruction.opCode]);
+		opCodeFunction(&parsedInstruction, &state);
+
+	} while (memcmp(&state,&stateOld,sizeof(state)) != 0);
+	// Dump PC and registers into stderr
+	dump_state(state);
+}
+
+
 
 
 

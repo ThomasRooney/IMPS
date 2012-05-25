@@ -57,39 +57,6 @@ arguments main_args;
 // A char is 8 bits
 // a long is 32 bits
 
-
-/**************************************************************
- * Instruction Type Definitions
- */
- const int INSTRUCTION_TYPE_UNKNOWN   = 0;
- const int INSTRUCTION_TYPE_R         = 1;
- const int INSTRUCTION_TYPE_I         = 2;
- const int INSTRUCTION_TYPE_J         = 3;
- const int	INSTRUCTION_TYPE_NA       = 4;
- 
- 
-const int instructionType [NUMBER_OF_OPCODES]{
-	INSTRUCTION_TYPE_NA, 
-	INSTRUCTION_TYPE_R,
-	INSTRUCTION_TYPE_I,
-	INSTRUCTION_TYPE_R,
-	INSTRUCTION_TYPE_I,
-	INSTRUCTION_TYPE_R,
-	INSTRUCTION_TYPE_I,
-	INSTRUCTION_TYPE_I,
-	INSTRUCTION_TYPE_I,
-	INSTRUCTION_TYPE_I,
-	INSTRUCTION_TYPE_I,
-	INSTRUCTION_TYPE_I,
-	INSTRUCTION_TYPE_I,
-	INSTRUCTION_TYPE_I,
-	INSTRUCTION_TYPE_I,
-	INSTRUCTION_TYPE_J,
-	INSTRUCTION_TYPE_R,
-	INSTRUCTION_TYPE_J,
-	INSTRUCTION_TYPE_R
-};
-
 /**************************************************************
  * OpCode Definitions
  */
@@ -115,6 +82,41 @@ typedef enum opCodeDef {
 	OPCODE_OUT = 18,
 	NUMBER_OF_OPCODES = 19
 }opCodeDef;
+
+
+/**************************************************************
+ * Instruction Type Definitions
+ */
+#define INSTRUCTION_TYPE_UNKNOWN   0
+#define INSTRUCTION_TYPE_R         1
+#define INSTRUCTION_TYPE_I         2
+#define INSTRUCTION_TYPE_J         3
+#define INSTRUCTION_TYPE_NA        4
+ 
+ 
+const int instructionType [NUMBER_OF_OPCODES] = {
+	INSTRUCTION_TYPE_NA, 
+	INSTRUCTION_TYPE_R,
+	INSTRUCTION_TYPE_I,
+	INSTRUCTION_TYPE_R,
+	INSTRUCTION_TYPE_I,
+	INSTRUCTION_TYPE_R,
+	INSTRUCTION_TYPE_I,
+	INSTRUCTION_TYPE_I,
+	INSTRUCTION_TYPE_I,
+	INSTRUCTION_TYPE_I,
+	INSTRUCTION_TYPE_I,
+	INSTRUCTION_TYPE_I,
+	INSTRUCTION_TYPE_I,
+	INSTRUCTION_TYPE_I,
+	INSTRUCTION_TYPE_I,
+	INSTRUCTION_TYPE_J,
+	INSTRUCTION_TYPE_R,
+	INSTRUCTION_TYPE_J,
+	INSTRUCTION_TYPE_R
+};
+
+
 /**************************************************************
  * State information containing registers for emulation
  */
@@ -160,7 +162,7 @@ void doOpCode_OUT (instruction * args, state * state);
  * Map between Opcode, Instruction type, and a function pointer
  */
 const opCodeDef       opCodeDefinition;
-void * opCodeDictionary [opCodeDefinition.NUMBER_OF_OPCODES] = 
+void * opCodeDictionary [NUMBER_OF_OPCODES] =
 {
 	&doOpCode_HALT,
 	&doOpCode_ADD ,
