@@ -3,43 +3,89 @@
 #define MAX_REGISTERS 32
 #define PC_BOUNDARY 4
 
-typedef unsigned char opCode;        // 8 bits to emulate 6 bit field
-typedef unsigned char registerIndex;  // 8 bits to emulate 4 bit field
-typedef unsigned long address;    // 32 bits to emulate 26 bit field
+typedef unsigned char opCode;
+typedef unsigned long registerIndex;
+typedef unsigned long address;
 
+/**************************************************************
+ * Utility
+ */
+char* pBinFill(long int x,char *so, char fillChar); // version with fill
+char* pBin(long int x, char *so);                   // version without fill
+#define kDisplayWidth 32
+
+char* pBin(long int x,char *so)
+{
+ char s[kDisplayWidth+1];
+ int  i=kDisplayWidth;
+ s[i--]=0x00;   // terminate string
+ do
+ { // fill in array from right to left
+  s[i--]=(x & 1) ? '1':'0';  // determine bit
+  x>>=1;  // shift right 1 bit
+ } while( x > 0);
+ i++;   // point to last valid character
+ sprintf(so,"%s",s+i); // stick it in the temp string string
+ return so;
+}
+
+char* pBinFill(long int x,char *so, char fillChar)
+{ // fill in array from right to left
+ char s[kDisplayWidth+1];
+ int  i=kDisplayWidth;
+ s[i--]=0x00;   // terminate string
+ do
+ { // fill in array from right to left
+  s[i--]=(x & 1) ? '1':'0';
+  x>>=1;  // shift right 1 bit
+ } while( x > 0);
+ while(i>=0) s[i--]=fillChar;    // fill with fillChar
+ sprintf(so,"%s",s);
+ return so;
+}
 
 /**************************************************************
  * Instructions
  */
- 
-#pragma pack(4)
+
+#pragma pack(1)
 typedef struct {
-	registerIndex R1;  // destination register index
-	registerIndex R2; // first source register index
-	registerIndex R3; // second source register index
+	registerIndex R1:5;  // destination register index
+	registerIndex R2:5; // first source register index
+	registerIndex R3:5; // second source register index
 }RTypeInstruction;
 
 
-#pragma pack(4)
+#pragma pack(1)
 typedef struct {
-	registerIndex R1;       // destination register index
-	registerIndex R2;       // source register index
-	unsigned short immediateValue; // 16 bits for the intermediate value
+	registerIndex R1:5;       // destination register index
+	registerIndex R2:5;       // source register index
+	unsigned short immediateValue:16; // 16 bits for the intermediate value
 }ITypeInstruction;
 
 
-#pragma pack(4)
+#pragma pack(1)
 typedef struct {;
-	 address address;
+	 address address:26;
 }JTypeInstruction;
 
-#pragma pack(4)
+#pragma pack(1)
 typedef struct {
-	opCode opCode;
+	opCode opCode:6;
 	union {
-		RTypeInstruction rType;
-		ITypeInstruction iType;
-		JTypeInstruction jType;
+		struct {
+			registerIndex R1:5;  // destination register index
+			registerIndex R2:5; // first source register index
+			registerIndex R3:5; // second source register index
+		}rType;
+		struct {
+			registerIndex R1:5;       // destination register index
+			registerIndex R2:5;       // source register index
+			unsigned short immediateValue:16; // 16 bits for the intermediate value
+		}iType;
+		struct {;
+			 address address:26;
+		}jType;
 	};
 }instruction;
 
@@ -49,7 +95,7 @@ typedef struct {
 }arguments;
 
 // Every instruction is 32 bits long, or 4 bytes
-typedef long binaryInstruction;
+typedef unsigned long binaryInstruction;
 
 arguments main_args;
 

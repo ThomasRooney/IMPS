@@ -119,10 +119,51 @@ void doOpCode_OUT (instruction * args, state * state) {
 }
 
 
-void printBinaryInstruction(binaryInstruction instruction) {
-	int i;
-	for (i = 0; i < 32; ++i) { printf("%i",(instruction >> i) & 1); }
-	printf("\n");
+void printBinaryInstruction(binaryInstruction i) {
+	 char so[kDisplayWidth+1]; // working buffer for pBin
+	 long int val=i;
+	 printf("Instruction: %s\n", pBinFill(val,so,'0'));
+}
+
+void dec2bin(long decimal, char *binary)
+{
+  int  k = 0, n = 0;
+  int  neg_flag = 0;
+  int  remain;
+  int  old_decimal;  // for test
+  char temp[80];
+  // take care of negative input
+  if (decimal < 0)
+  {
+    decimal = -decimal;
+    neg_flag = 1;
+  }
+  do
+  {
+    old_decimal = decimal;   // for test
+    remain    = decimal % 2;
+    // whittle down the decimal number
+    decimal   = decimal / 2;
+    // this is a test to show the action
+    // printf("%d/2 = %d  remainder = %d\n", old_decimal, decimal, remain);
+    // converts digit 0 or 1 to character '0' or '1'
+    temp[k++] = remain + '0';
+  } while (decimal > 0);
+  if (neg_flag)
+    temp[k++] = '-';       // add - sign
+  else
+    temp[k++] = ' ';       // space
+  // reverse the spelling
+  while (k >= 0)
+    binary[n++] = temp[--k];
+  binary[n-1] = 0;         // end with NULL
+}
+
+void printBinary(long decimal) {
+	char * binary = malloc(250);
+	dec2bin(decimal, binary);
+	printf("%s", binary);
+	free(binary);
 }
 
 int instructionFromOpcode(opCode opCode) {
@@ -132,25 +173,49 @@ int instructionFromOpcode(opCode opCode) {
 	return INSTRUCTION_TYPE_UNKNOWN;
 }
 
+
 // Inclusive
 long readBitField(binaryInstruction bin,unsigned char start, unsigned char end)
 {
-	long mask = (long)(pow(2, (long)(end-start))-1)>>start;
-	return (long)(bin & mask);
+	unsigned int mask = (long)(pow(2, (long)(end-start+1))-1)<<(sizeof(bin)*8-end);
+	unsigned int extracted;
+	printf("Reading Bit Field...\n   start = %i\n   end = %i\n   mask =      ", start, end);
+
+	printBinary(mask);
+	printf("   decimal: %u\n   instruction: ", mask);printBinaryInstruction(bin>>start);
+	printf("   Extracted = ");
+	extracted = (long)(((bin>>start) & mask)>>start);
+	printBinary( extracted );
+	printf("   decimal: %u\n", extracted);
+	return extracted;
+}
+
+inline void endian_swap(unsigned int *x)
+{
+    *x = (*x>>24) |
+        ((*x<<8) & 0x00FF0000) |
+        ((*x>>8) & 0x0000FF00) |
+        (*x<<24);
 }
 
 instruction disassembleInstruction(binaryInstruction binInstruction) {
+	// swap end, start so that we work in little endian.
+	printf("little endianness.., so convert..\n");
+	endian_swap(&binInstruction);
+
 	instruction outputInstruction;
 	opCode opCode;
 	// First 5 bits of any instruction is the opCode
-	opCode = readBitField(binInstruction,0, 5);
+//	outputInstruction.opCode = readBitField(binInstruction,0, 5);
+	memcpy(&(outputInstruction), &binInstruction, sizeof(instruction));
+	dump_instruction(outputInstruction);
 	// Work out the type of the instruction, and thus data formatting
-	int instructionType = instructionFromOpcode(opCode);
+	int instructionType = instructionFromOpcode(outputInstruction.opCode);
 	if (instructionType == INSTRUCTION_TYPE_UNKNOWN) {
 		printf("Fatal Error: Unknown Instruction Type Read");
 		exit(EXIT_FAILURE); 
 	}
-	switch(instructionType) {
+/*	switch(instructionType) {
 		case INSTRUCTION_TYPE_R:
 			outputInstruction.rType.R1 = (short)readBitField(binInstruction,6, 10);
 			outputInstruction.rType.R2 = (short)readBitField(binInstruction,11, 15);
@@ -165,9 +230,9 @@ instruction disassembleInstruction(binaryInstruction binInstruction) {
 			outputInstruction.jType.address = (short)readBitField(binInstruction,6, 10);
 			break;
 			
-	}
+	}*/
 	long binInstructionAfterOpCode = (binInstruction<<5);
-	memcpy(&(outputInstruction.rType), &binInstructionAfterOpCode, sizeof(long));
+//	memcpy(&(outputInstruction.rType), &binInstructionAfterOpCode, sizeof(long));
 	return outputInstruction;
 }
 
@@ -180,6 +245,32 @@ void dump_state(state curState) {
 					ProgramCounter: %i\n", curState.programCounter);
 	for (i = 0; i < MAX_REGISTERS; i++) {
 		fprintf(stderr, "Register[%i]: %i\n", i, curState.reg[i]);
+	}
+}
+
+void dump_instruction(instruction parsedInstruction) {
+	printf("Parsed Instruction Dump: \n");
+	printf("  opCode = %i\n", parsedInstruction.opCode);
+	int instructionType = instructionFromOpcode(parsedInstruction.opCode);
+	switch(instructionType) {
+			case INSTRUCTION_TYPE_R:
+				printf("  Instruction Type R... Arguments:\n");
+				printf("    R1: %u\n", parsedInstruction.rType.R1);
+				printf("    R2: %u\n", parsedInstruction.rType.R2);
+				printf("    R3: %u\n", parsedInstruction.rType.R3);
+				break;
+			case INSTRUCTION_TYPE_I:
+				printf("  Instruction Type R... Arguments:\n");
+				printf("    R1: %u\n", parsedInstruction.iType.R1);
+				printf("    R2: %u\n", parsedInstruction.iType.R2);
+				printf("    immediateValue: %u\n", parsedInstruction.iType.immediateValue);
+				break;
+			case INSTRUCTION_TYPE_J:
+				printf("  Instruction Type J... Arguments:\n");
+				printf("    address: %u\n", parsedInstruction.jType);
+    			break;
+			default:
+				printf("Unknown Instruction Type!\n");
 	}
 }
 
@@ -205,9 +296,12 @@ void emulation_loop(const char * inputBuffer, int inputLength) {
 	do
 	{
 		memcpy(&stateOld, &state, sizeof(state));
-		memcpy(&binaryInstruction, inputBuffer+state.programCounter, 4);
+		memcpy(&binaryInstruction, inputBuffer+state.programCounter, sizeof(instruction));
 		printBinaryInstruction(binaryInstruction);
-		parsedInstruction = disassembleInstruction(binaryInstruction);
+//		parsedInstruction = disassembleInstruction(binaryInstruction);
+//		if (main_args.verbose == 1) {
+//			dump_instruction(parsedInstruction);
+//		}
 		opCodeFunction = (opCodeDictionary[parsedInstruction.opCode]);
 		opCodeFunction(&parsedInstruction, &state);
 
@@ -256,8 +350,11 @@ int readFile(const char * fileName, int * outputLength, char * outputBuffer) {
 int main(int argc, char **argv) {
 	int iter;
 	char * inputBuffer;
-	int  * inputLength;
-
+	int  * inputLength = malloc(sizeof(int));
+	printf("sizeof(instruction)= %i...\n sizeof(binaryInstruction)=%i\n",
+			sizeof(instruction), sizeof(binaryInstruction));
+	printf("sizeof(RTypeInstruction)= %i...\n sizeof(ITypeInstruction)=%i\n sizeof(JTypeInstruction)=%i\n",
+			sizeof(RTypeInstruction), sizeof(ITypeInstruction), sizeof(JTypeInstruction));
 	if (argc < 2 ) {
 		printf("FATAL ERROR: Filename of assembled file needs to be given\n");
 		return EXIT_SUCCESS;
@@ -281,6 +378,6 @@ int main(int argc, char **argv) {
 	}
 	printf("File Read Success. Length is %i bits\n", (*inputLength)*32);
 	emulation_loop(inputBuffer, *inputLength);
-
+	free(inputLength);
     return EXIT_SUCCESS;
 }
