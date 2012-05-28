@@ -42,15 +42,12 @@ instruction disassembleInstruction(binaryInstruction binInstruction) {
 	return outputInstruction;
 }
 
-
-
-
 void dump_state(state curState) {
 	int i;
-	fprintf(stderr, "PROGRAM_HALTED\n--------------\n\
-					ProgramCounter: %i\n", curState.programCounter);
+	fprintf(stderr, "PROGRAM_HALTED\n--------------\
+					\nProgramCounter: %i\n", curState.programCounter);
 	for (i = 0; i < MAX_REGISTERS; i++) {
-		fprintf(stderr, "Register[%i]: %i\n", i, curState.reg[i]);
+		fprintf(stderr, "  Register[%i]: %i\n", i, curState.reg[i]);
 	}
 }
 
