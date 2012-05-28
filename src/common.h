@@ -1,46 +1,33 @@
+#ifndef COMMON_HEADER_PARSED
+
+#define COMMON_HEADER_PARSED
 #define FATAL_ERROR 10
 #define MEMORY_SIZE 65535
 #define MAX_REGISTERS 32
 #define PC_BOUNDARY 4
 
+
+
 typedef unsigned char opCode;
-typedef unsigned long registerIndex;
-typedef unsigned long address;
+typedef unsigned int registerIndex;
+typedef unsigned int address;
 
 /**************************************************************
  * Utility
  */
-char* pBinFill(long int x,char *so, char fillChar); // version with fill
 char* pBin(long int x, char *so);                   // version without fill
-#define kDisplayWidth 32
-
-char* pBin(long int x,char *so)
+#define kDisplayWidth 36
+char* pBin(long x,char *so)
 {
  char s[kDisplayWidth+1];
- int  i=kDisplayWidth;
+ int i=kDisplayWidth;
  s[i--]=0x00;   // terminate string
  do
  { // fill in array from right to left
-  s[i--]=(x & 1) ? '1':'0';  // determine bit
-  x>>=1;  // shift right 1 bit
- } while( x > 0);
+  s[i--]=!(i%9)?' ':(x>>=1)&&(x&1) ? '1':'0';  // determine bit, shift, add in spaceing
+ } while( i > 0); 
  i++;   // point to last valid character
  sprintf(so,"%s",s+i); // stick it in the temp string string
- return so;
-}
-
-char* pBinFill(long int x,char *so, char fillChar)
-{ // fill in array from right to left
- char s[kDisplayWidth+1];
- int  i=kDisplayWidth;
- s[i--]=0x00;   // terminate string
- do
- { // fill in array from right to left
-  s[i--]=(x & 1) ? '1':'0';
-  x>>=1;  // shift right 1 bit
- } while( x > 0);
- while(i>=0) s[i--]=fillChar;    // fill with fillChar
- sprintf(so,"%s",s);
  return so;
 }
 
@@ -50,6 +37,7 @@ char* pBinFill(long int x,char *so, char fillChar)
 
 #pragma pack(1)
 typedef struct {
+	opCode opCode:6;
 	registerIndex R1:5;  // destination register index
 	registerIndex R2:5; // first source register index
 	registerIndex R3:5; // second source register index
@@ -58,6 +46,7 @@ typedef struct {
 
 #pragma pack(1)
 typedef struct {
+	opCode opCode:6;
 	registerIndex R1:5;       // destination register index
 	registerIndex R2:5;       // source register index
 	unsigned short immediateValue:16; // 16 bits for the intermediate value
@@ -66,17 +55,24 @@ typedef struct {
 
 #pragma pack(1)
 typedef struct {;
+	opCode opCode:6;
 	 address address:26;
 }JTypeInstruction;
 
 #pragma pack(1)
 typedef struct {
-	opCode opCode:6;
+
+	// The union causes padding between bitfields
+	// This causes sizeof(instruction) == 5
 	union {
-		struct {
+		RTypeInstruction rType;
+		ITypeInstruction iType;
+		JTypeInstruction jType;
+		/*struct {
 			registerIndex R1:5;  // destination register index
 			registerIndex R2:5; // first source register index
 			registerIndex R3:5; // second source register index
+			unsigned :11; // 11 bytes of padding to make the struct 26 bits
 		}rType;
 		struct {
 			registerIndex R1:5;       // destination register index
@@ -85,7 +81,8 @@ typedef struct {
 		}iType;
 		struct {;
 			 address address:26;
-		}jType;
+		}jType;*/
+		opCode opCode : 6;
 	};
 }instruction;
 
@@ -95,13 +92,13 @@ typedef struct {
 }arguments;
 
 // Every instruction is 32 bits long, or 4 bytes
-typedef unsigned long binaryInstruction;
+typedef unsigned int binaryInstruction;
 
 arguments main_args;
 
 
 // A char is 8 bits
-// a long is 32 bits
+// a int is 32 bits
 
 /**************************************************************
  * OpCode Definitions
@@ -169,67 +166,12 @@ const int instructionType [NUMBER_OF_OPCODES] = {
 
 
 typedef struct { 
-  unsigned long reg [32];
-  long * MEMORY;
+  unsigned int reg [32];
+  int * MEMORY;
   unsigned int programCounter;
 }state;
  
  
 
 
-
-/**************************************************************
- * Function Pointers for Opcode emulation
- */
-
-// TODO: Implement all
-// TODO: work out a decent state structure, and change "state"
-void doOpCode_HALT(instruction * args, state * state);
-void doOpCode_ADD (instruction * args, state * state);
-void doOpCode_ADDI(instruction * args, state * state);
-void doOpCode_SUB (instruction * args, state * state);
-void doOpCode_SUBI(instruction * args, state * state);
-void doOpCode_MUL (instruction * args, state * state);
-void doOpCode_MULI(instruction * args, state * state);
-void doOpCode_LW  (instruction * args, state * state);
-void doOpCode_SW  (instruction * args, state * state);
-void doOpCode_BEQ (instruction * args, state * state);
-void doOpCode_BNE (instruction * args, state * state);
-void doOpCode_BLT (instruction * args, state * state);
-void doOpCode_BGT (instruction * args, state * state);
-void doOpCode_BLE (instruction * args, state * state);
-void doOpCode_BGE (instruction * args, state * state);
-void doOpCode_JMP (instruction * args, state * state);
-void doOpCode_JR  (instruction * args, state * state);
-void doOpCode_JAL (instruction * args, state * state);
-void doOpCode_OUT (instruction * args, state * state);
-
-/**************************************************************
- * Map between Opcode, Instruction type, and a function pointer
- */
-const opCodeDef       opCodeDefinition;
-void * opCodeDictionary [NUMBER_OF_OPCODES] =
-{
-	&doOpCode_HALT,
-	&doOpCode_ADD ,
-	&doOpCode_ADDI,
-	&doOpCode_SUB ,
-	&doOpCode_SUBI,
-	&doOpCode_MUL ,
-	&doOpCode_MULI,
-	&doOpCode_LW  ,
-	&doOpCode_SW  ,
-	&doOpCode_BEQ ,
-	&doOpCode_BNE ,
-	&doOpCode_BLT ,
-	&doOpCode_BGT ,
-	&doOpCode_BLE ,
-	&doOpCode_BGE ,
-	&doOpCode_JMP ,
-	&doOpCode_JR  ,
-	&doOpCode_JAL ,
-	&doOpCode_OUT 
-};
-
-
-
+#endif
