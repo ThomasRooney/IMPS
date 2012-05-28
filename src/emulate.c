@@ -36,9 +36,9 @@ inline void endian_swap(unsigned int *x)
 
 instruction disassembleInstruction(binaryInstruction binInstruction) {
 	instruction outputInstruction;
-	opCode opCode;
 	memcpy(&outputInstruction, &binInstruction, sizeof(binaryInstruction));
 	endian_swap((unsigned int *)&outputInstruction);
+	printBinaryInstruction(*(binaryInstruction *)&outputInstruction);
 	return outputInstruction;
 }
 
