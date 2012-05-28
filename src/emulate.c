@@ -122,11 +122,11 @@ void doOpCode_OUT (instruction * args, state * state) {
 void printBinaryInstruction(binaryInstruction i) {
 
 	 char so[kDisplayWidth+1]; // working buffer for pBin
-	 unsigned long val=i;
+	 unsigned int val=i;
 	 printf("Instruction: %s\n", pBin(val,so));
 }
 
-void dec2bin(unsigned long decimal, char *binary)
+void dec2bin(unsigned int decimal, char *binary)
 {
   int  k = 0, n = 0;
   int  neg_flag = 0;
@@ -161,7 +161,7 @@ void dec2bin(unsigned long decimal, char *binary)
   binary[n-1] = 0;         // end with NULL
 }
 
-void printBinary(long decimal) {
+void printBinary(int decimal) {
 	char * binary = malloc(250);
 	dec2bin(decimal, binary);
 	printf("%s", binary);
@@ -177,7 +177,7 @@ int instructionFromOpcode(opCode opCode) {
 
 
 // Inclusive
-long readBitField(binaryInstruction bin,unsigned char start, unsigned char end)
+int readBitField(binaryInstruction bin,unsigned char start, unsigned char end)
 {
 	unsigned int mask = ((2<<((end-start+1)))-1)<<(sizeof(bin)*8-end);
 	unsigned int extracted;
@@ -186,7 +186,7 @@ long readBitField(binaryInstruction bin,unsigned char start, unsigned char end)
 	printBinary(mask);
 	printf("   decimal: %u\n   instruction: ", mask);printBinaryInstruction(bin>>start);
 	printf("   Extracted = ");
-	extracted = (long)(((bin>>start) & mask)>>start);
+	extracted = (int)(((bin>>start) & mask)>>start);
 	printBinary( extracted );
 	printf("   decimal: %u\n", extracted);
 	return extracted;
@@ -201,31 +201,43 @@ inline void endian_swap(unsigned int *x)
 }
 
 instruction disassembleInstruction(binaryInstruction binInstruction) {
-	// swap end, start so that we work in little endian.
-	// printf("little endianness.., so convert..\n");
-	// endian_swap(&binInstruction);
-	printf("Printing Binary Instruction..\n");
-	printBinaryInstruction(binInstruction);
-	binaryInstruction workingBinInstruction = malloc(sizeof(binaryInstruction));
-	memcpy(&workingBinInstruction, &binInstruction, sizeof(binaryInstruction));
-	printBinaryInstruction(workingBinInstruction);
-	printBinaryInstruction(workingBinInstruction >> 26);
 	instruction outputInstruction;
 	opCode opCode;
-	// First 6 bits of any instruction is the opCode
-	outputInstruction.opCode = workingBinInstruction >> 26;
-	workingBinInstruction <<= 6;
-	// The union causes padding between bitfields
+	binaryInstruction workingBinInstruction;
+	// swap end, start so that we work in little endian.
 	
-	memcpy(&(outputInstruction.rType), &(workingBinInstruction), sizeof(long));
-	dump_instruction(outputInstruction);
+//	workingBinInstruction = malloc(sizeof(binaryInstruction));
+        memcpy(&outputInstruction, &binInstruction, sizeof(binaryInstruction));
+	printf("little endianness.., so convert..\n");
+	printf("Printing Binary Instruction..\n");
+	printf("sizeof(outputInstruction)=%i\n", sizeof(outputInstruction));
+	printBinaryInstruction(*(binaryInstruction *)(void *)(&(outputInstruction)));
+	endian_swap((unsigned int *)&outputInstruction);
+printBinaryInstruction(*(binaryInstruction *)(void *)(&(outputInstruction)));
+	printf("Opcode = %i\n",	outputInstruction.opCode);
+	// A little test for my sanity..
+	//printBinaryInstruction(workingBinInstruction);
+//	printBinaryInstruction((workingBinInstruction >> 24)&31);
+	// First 6 bits of any instruction is the opCode
+//	outputInstruction.opCode = (workingBinInstruction >> 24)&31;
+//	workingBinInstruction <<= 6;
+//	workingBinInstruction &= 16777216 - 1;
+//	printBinaryInstruction(workingBinInstruction);
+	// The union causes padding between bitfields
+	// byte swap again to put it in the right format
+		//endian_swap(&workingBinInstruction);
+//	memcpy(&(outputInstruction.rType), &(workingBinInstruction), sizeof(int));
+	printf("Inside outputInstruction union..");
+
+	printBinaryInstruction(*(binaryInstruction *)(void *)(&(outputInstruction.rType)));
+	printf("0-4 bits = %i\n5-9 bits = %i\n10-14 bits = %i\n", outputInstruction.rType.R1, outputInstruction.rType.R2, outputInstruction.rType.R3);
 	// Work out the type of the instruction, and thus data formatting
-	int instructionType = instructionFromOpcode(outputInstruction.opCode);
+	/*int instructionType = instructionFromOpcode(outputInstruction.opCode);
 	if (instructionType == INSTRUCTION_TYPE_UNKNOWN) {
 		printf("Fatal Error: Unknown Instruction Type Read");
 		exit(EXIT_FAILURE); 
 	}
-/*	switch(instructionType) {
+	switch(instructionType) {
 		case INSTRUCTION_TYPE_R:
 			outputInstruction.rType.R1 = (short)readBitField(binInstruction,6, 10);
 			outputInstruction.rType.R2 = (short)readBitField(binInstruction,11, 15);
@@ -241,9 +253,9 @@ instruction disassembleInstruction(binaryInstruction binInstruction) {
 			break;
 			
 	}*/
-	long binInstructionAfterOpCode = (binInstruction<<5);
+	dump_instruction(outputInstruction);
 	free(workingBinInstruction);
-//	memcpy(&(outputInstruction.rType), &binInstructionAfterOpCode, sizeof(long));
+//	memcpy(&(outputInstruction.rType), &binInstructionAfterOpCode, sizeof(int));
 	return outputInstruction;
 }
 
@@ -289,7 +301,7 @@ state initialise_state(void) {
 	state virtualState;
 	memset(virtualState.reg, 0, sizeof(virtualState.reg));
 	virtualState.programCounter = 0;
-	virtualState.MEMORY = calloc(MEMORY_SIZE, sizeof(long));
+	virtualState.MEMORY = calloc(MEMORY_SIZE, sizeof(int));
 	// allocate 65535 addresses with 32 bit boundary.
 	return virtualState;
 }
@@ -298,17 +310,20 @@ state initialise_state(void) {
 void emulation_loop(const char * inputBuffer, int inputLength) {
 	instruction parsedInstruction;
 	binaryInstruction binaryInstruction;
+	int testBuffer;
 	void (*opCodeFunction)(instruction *, state *);
 	state stateOld;
 	state state = initialise_state();
 
+	memcpy(&testBuffer, inputBuffer, 4);
+	printBinaryInstruction(testBuffer);
 
 	// Whilst state is changing every iteration, else something's gone wrong
 	do
 	{
 
 		memcpy(&stateOld, &state, sizeof(state));
-		memcpy(&binaryInstruction, inputBuffer+state.programCounter, sizeof(instruction));
+		memcpy(&binaryInstruction, inputBuffer+state.programCounter, sizeof(binaryInstruction));
 		parsedInstruction = disassembleInstruction(binaryInstruction);
 		if (main_args.verbose == 1) {
 			dump_instruction(parsedInstruction);
@@ -324,7 +339,7 @@ void emulation_loop(const char * inputBuffer, int inputLength) {
 
 
 
-int readFile(const char * fileName, int * outputLength, char * outputBuffer) {
+int readFile(const char * fileName, int * outputLength, char ** outputBuffer) {
 	FILE *file;
 
 	// Open file
@@ -342,9 +357,9 @@ int readFile(const char * fileName, int * outputLength, char * outputBuffer) {
 	fseek(file, 0, SEEK_SET);
 
 	// Allocate memory
-	outputBuffer=(char *)malloc(*outputLength+1);
+	*outputBuffer=(char *)calloc(*outputLength+1, sizeof(char));
 			//Note: it is the caller's requirement to free the memory
-	if (!outputBuffer)
+	if (!*outputBuffer)
 	{
 		fprintf(stderr, "Memory error!\n");
                                 fclose(file);
@@ -352,7 +367,7 @@ int readFile(const char * fileName, int * outputLength, char * outputBuffer) {
 	}
 
 	// Read file contents into buffer
-	fread(outputBuffer, *outputLength, 1, file);
+	fread(*outputBuffer, *outputLength, 1, file);
 	fclose(file);
 	return EXIT_SUCCESS;
 }
@@ -383,7 +398,7 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	if (readFile(main_args.file_name, inputLength, inputBuffer)>EXIT_SUCCESS) {
+	if (readFile(main_args.file_name, inputLength, &inputBuffer)>EXIT_SUCCESS) {
 		return FATAL_ERROR;
 	}
 	printf("File Read Success. Length is %i bits\n", (*inputLength)*32);

@@ -4,29 +4,27 @@
 #define PC_BOUNDARY 4
 
 typedef unsigned char opCode;
-typedef unsigned long registerIndex;
-typedef unsigned long address;
+typedef unsigned int registerIndex;
+typedef unsigned int address;
 
 /**************************************************************
  * Utility
  */
 char* pBinFill(long int x,char *so, char fillChar); // version with fill
 char* pBin(long int x, char *so);                   // version without fill
-#define kDisplayWidth 32
+#define kDisplayWidth 36
 
 char* pBin(long x,char *so)
 {
-
  char s[kDisplayWidth+1];
- int  i=kDisplayWidth;
+ int i,k;
+ i=kDisplayWidth;
+ k=i;
  s[i--]=0x00;   // terminate string
-
  do
  { // fill in array from right to left
-  s[i--]=(x & 1) ? '1':'0';  // determine bit
-  x>>=1;  // shift right 1 bit
- } while( i > 0);
-	 
+  s[i--]=!(k--%9)?' ':(x>>=1)&&(x&1) ? '1':'0';  // determine bit, shift
+ } while( i > 0); 
  i++;   // point to last valid character
  sprintf(so,"%s",s+i); // stick it in the temp string string
  return so;
@@ -53,6 +51,7 @@ char* pBinFill(long int x,char *so, char fillChar)
 
 #pragma pack(1)
 typedef struct {
+	opCode opCode:6;
 	registerIndex R1:5;  // destination register index
 	registerIndex R2:5; // first source register index
 	registerIndex R3:5; // second source register index
@@ -61,6 +60,7 @@ typedef struct {
 
 #pragma pack(1)
 typedef struct {
+	opCode opCode:6;
 	registerIndex R1:5;       // destination register index
 	registerIndex R2:5;       // source register index
 	unsigned short immediateValue:16; // 16 bits for the intermediate value
@@ -69,19 +69,24 @@ typedef struct {
 
 #pragma pack(1)
 typedef struct {;
+	opCode opCode:6;
 	 address address:26;
 }JTypeInstruction;
 
 #pragma pack(1)
 typedef struct {
-	opCode opCode:6;
+
 	// The union causes padding between bitfields
 	// This causes sizeof(instruction) == 5
 	union {
-		struct {
+		RTypeInstruction rType;
+		ITypeInstruction iType;
+		JTypeInstruction jType;
+		/*struct {
 			registerIndex R1:5;  // destination register index
 			registerIndex R2:5; // first source register index
 			registerIndex R3:5; // second source register index
+			unsigned :11; // 11 bytes of padding to make the struct 26 bits
 		}rType;
 		struct {
 			registerIndex R1:5;       // destination register index
@@ -90,7 +95,8 @@ typedef struct {
 		}iType;
 		struct {;
 			 address address:26;
-		}jType;
+		}jType;*/
+		opCode opCode : 6;
 	};
 }instruction;
 
@@ -100,13 +106,13 @@ typedef struct {
 }arguments;
 
 // Every instruction is 32 bits long, or 4 bytes
-typedef unsigned long binaryInstruction;
+typedef unsigned int binaryInstruction;
 
 arguments main_args;
 
 
 // A char is 8 bits
-// a long is 32 bits
+// a int is 32 bits
 
 /**************************************************************
  * OpCode Definitions
@@ -174,8 +180,8 @@ const int instructionType [NUMBER_OF_OPCODES] = {
 
 
 typedef struct { 
-  unsigned long reg [32];
-  long * MEMORY;
+  unsigned int reg [32];
+  int * MEMORY;
   unsigned int programCounter;
 }state;
  
