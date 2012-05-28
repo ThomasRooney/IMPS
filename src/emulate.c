@@ -13,7 +13,9 @@
 /**************************************************************************
 * Callback functions for opcode operations
 */
-void doOpCode_HALT(instruction * args, state * state)
+
+// no state change will call the termination in the emulation loop
+void doOpCode_HALT(instruction * args, state * state) 
 {}
 
 void doOpCode_ADD (instruction * args, state * state) {
@@ -24,7 +26,7 @@ void doOpCode_ADD (instruction * args, state * state) {
 
 void doOpCode_ADDI(instruction * args, state * state) {
   state->reg[args->iType.R1] =
-  state->reg[args->iType.R2] + args->iType.immediateValue; //considering we can operate on short to long
+  state->reg[args->iType.R2] + args->iType.immediateValue; 
   state->programCounter += PC_BOUNDARY;
 }
 
@@ -36,7 +38,7 @@ void doOpCode_SUB (instruction * args, state * state) {
 
 void doOpCode_SUBI(instruction * args, state * state) {
   state->reg[args->iType.R1] =
-  state->reg[args->iType.R2] - args->iType.immediateValue; //considering we can operate on short to long
+  state->reg[args->iType.R2] - args->iType.immediateValue; 
   state->programCounter += PC_BOUNDARY;
 }
 
@@ -48,7 +50,7 @@ void doOpCode_MUL (instruction * args, state * state) {
 
 void doOpCode_MULI(instruction * args, state * state) {
   state->reg[args->iType.R1] =
-  state->reg[args->iType.R2] * args->iType.immediateValue; //considering we can operate on short to long
+  state->reg[args->iType.R2] * args->iType.immediateValue; 
   state->programCounter += PC_BOUNDARY;
 }
 
@@ -203,59 +205,8 @@ inline void endian_swap(unsigned int *x)
 instruction disassembleInstruction(binaryInstruction binInstruction) {
 	instruction outputInstruction;
 	opCode opCode;
-	binaryInstruction workingBinInstruction;
-	// swap end, start so that we work in little endian.
-	
-//	workingBinInstruction = malloc(sizeof(binaryInstruction));
-        memcpy(&outputInstruction, &binInstruction, sizeof(binaryInstruction));
-	printf("little endianness.., so convert..\n");
-	printf("Printing Binary Instruction..\n");
-	printf("sizeof(outputInstruction)=%i\n", sizeof(outputInstruction));
-	printBinaryInstruction(*(binaryInstruction *)(void *)(&(outputInstruction)));
+	memcpy(&outputInstruction, &binInstruction, sizeof(binaryInstruction));
 	endian_swap((unsigned int *)&outputInstruction);
-printBinaryInstruction(*(binaryInstruction *)(void *)(&(outputInstruction)));
-	printf("Opcode = %i\n",	outputInstruction.opCode);
-	// A little test for my sanity..
-	//printBinaryInstruction(workingBinInstruction);
-//	printBinaryInstruction((workingBinInstruction >> 24)&31);
-	// First 6 bits of any instruction is the opCode
-//	outputInstruction.opCode = (workingBinInstruction >> 24)&31;
-//	workingBinInstruction <<= 6;
-//	workingBinInstruction &= 16777216 - 1;
-//	printBinaryInstruction(workingBinInstruction);
-	// The union causes padding between bitfields
-	// byte swap again to put it in the right format
-		//endian_swap(&workingBinInstruction);
-//	memcpy(&(outputInstruction.rType), &(workingBinInstruction), sizeof(int));
-	printf("Inside outputInstruction union..");
-
-	printBinaryInstruction(*(binaryInstruction *)(void *)(&(outputInstruction.rType)));
-	printf("0-4 bits = %i\n5-9 bits = %i\n10-14 bits = %i\n", outputInstruction.rType.R1, outputInstruction.rType.R2, outputInstruction.rType.R3);
-	// Work out the type of the instruction, and thus data formatting
-	/*int instructionType = instructionFromOpcode(outputInstruction.opCode);
-	if (instructionType == INSTRUCTION_TYPE_UNKNOWN) {
-		printf("Fatal Error: Unknown Instruction Type Read");
-		exit(EXIT_FAILURE); 
-	}
-	switch(instructionType) {
-		case INSTRUCTION_TYPE_R:
-			outputInstruction.rType.R1 = (short)readBitField(binInstruction,6, 10);
-			outputInstruction.rType.R2 = (short)readBitField(binInstruction,11, 15);
-			outputInstruction.rType.R3 = (short)readBitField(binInstruction,16, 20);
-			break;
-		case INSTRUCTION_TYPE_I:
-			outputInstruction.iType.R1 = (short)readBitField(binInstruction,6, 10);
-			outputInstruction.iType.R2 = (short)readBitField(binInstruction,11, 15);
-			outputInstruction.iType.immediateValue = (short)readBitField(binInstruction,16, 31);
-			break;
-		case INSTRUCTION_TYPE_J:
-			outputInstruction.jType.address = (short)readBitField(binInstruction,6, 10);
-			break;
-			
-	}*/
-	dump_instruction(outputInstruction);
-	free(workingBinInstruction);
-//	memcpy(&(outputInstruction.rType), &binInstructionAfterOpCode, sizeof(int));
 	return outputInstruction;
 }
 
@@ -306,7 +257,6 @@ state initialise_state(void) {
 	return virtualState;
 }
 
-//TODO: Implement a state and the map between instruction and function
 void emulation_loop(const char * inputBuffer, int inputLength) {
 	instruction parsedInstruction;
 	binaryInstruction binaryInstruction;
@@ -321,7 +271,6 @@ void emulation_loop(const char * inputBuffer, int inputLength) {
 	// Whilst state is changing every iteration, else something's gone wrong
 	do
 	{
-
 		memcpy(&stateOld, &state, sizeof(state));
 		memcpy(&binaryInstruction, inputBuffer+state.programCounter, sizeof(binaryInstruction));
 		parsedInstruction = disassembleInstruction(binaryInstruction);
@@ -376,10 +325,6 @@ int main(int argc, char **argv) {
 	int iter;
 	char * inputBuffer;
 	int  * inputLength = malloc(sizeof(int));
-	printf("sizeof(instruction)= %i...\n sizeof(binaryInstruction)=%i\n",
-			sizeof(instruction), sizeof(binaryInstruction));
-	printf("sizeof(RTypeInstruction)= %i...\n sizeof(ITypeInstruction)=%i\n sizeof(JTypeInstruction)=%i\n",
-			sizeof(RTypeInstruction), sizeof(ITypeInstruction), sizeof(JTypeInstruction));
 	if (argc < 2 ) {
 		printf("FATAL ERROR: Filename of assembled file needs to be given\n");
 		return EXIT_SUCCESS;
