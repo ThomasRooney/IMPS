@@ -15,13 +15,11 @@ char* pBin(long int x, char *so);                   // version without fill
 char* pBin(long x,char *so)
 {
  char s[kDisplayWidth+1];
- int i,k;
- i=kDisplayWidth;
- k=i;
+ int i=kDisplayWidth;
  s[i--]=0x00;   // terminate string
  do
  { // fill in array from right to left
-  s[i--]=!(k--%9)?' ':(x>>=1)&&(x&1) ? '1':'0';  // determine bit, shift, add in spaceing
+  s[i--]=!(i%9)?' ':(x>>=1)&&(x&1) ? '1':'0';  // determine bit, shift, add in spaceing
  } while( i > 0); 
  i++;   // point to last valid character
  sprintf(so,"%s",s+i); // stick it in the temp string string
