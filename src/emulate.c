@@ -120,16 +120,18 @@ void doOpCode_OUT (instruction * args, state * state) {
 
 
 void printBinaryInstruction(binaryInstruction i) {
+
 	 char so[kDisplayWidth+1]; // working buffer for pBin
-	 long int val=i;
-	 printf("Instruction: %s\n", pBinFill(val,so,'0'));
+	 unsigned long val=i;
+	 printf("Instruction: %s\n", pBin(val,so));
 }
 
-void dec2bin(long decimal, char *binary)
+void dec2bin(unsigned long decimal, char *binary)
 {
   int  k = 0, n = 0;
   int  neg_flag = 0;
   int  remain;
+  
   int  old_decimal;  // for test
   char temp[80];
   // take care of negative input
@@ -145,7 +147,7 @@ void dec2bin(long decimal, char *binary)
     // whittle down the decimal number
     decimal   = decimal / 2;
     // this is a test to show the action
-    // printf("%d/2 = %d  remainder = %d\n", old_decimal, decimal, remain);
+     printf("%d/2 = %d  remainder = %d\n", old_decimal, decimal, remain);
     // converts digit 0 or 1 to character '0' or '1'
     temp[k++] = remain + '0';
   } while (decimal > 0);
@@ -177,7 +179,7 @@ int instructionFromOpcode(opCode opCode) {
 // Inclusive
 long readBitField(binaryInstruction bin,unsigned char start, unsigned char end)
 {
-	unsigned int mask = (long)(pow(2, (long)(end-start+1))-1)<<(sizeof(bin)*8-end);
+	unsigned int mask = ((2<<((end-start+1)))-1)<<(sizeof(bin)*8-end);
 	unsigned int extracted;
 	printf("Reading Bit Field...\n   start = %i\n   end = %i\n   mask =      ", start, end);
 
@@ -200,14 +202,22 @@ inline void endian_swap(unsigned int *x)
 
 instruction disassembleInstruction(binaryInstruction binInstruction) {
 	// swap end, start so that we work in little endian.
-	printf("little endianness.., so convert..\n");
-	endian_swap(&binInstruction);
-
+	// printf("little endianness.., so convert..\n");
+	// endian_swap(&binInstruction);
+	printf("Printing Binary Instruction..\n");
+	printBinaryInstruction(binInstruction);
+	binaryInstruction workingBinInstruction = malloc(sizeof(binaryInstruction));
+	memcpy(&workingBinInstruction, &binInstruction, sizeof(binaryInstruction));
+	printBinaryInstruction(workingBinInstruction);
+	printBinaryInstruction(workingBinInstruction >> 26);
 	instruction outputInstruction;
 	opCode opCode;
-	// First 5 bits of any instruction is the opCode
-//	outputInstruction.opCode = readBitField(binInstruction,0, 5);
-	memcpy(&(outputInstruction), &binInstruction, sizeof(instruction));
+	// First 6 bits of any instruction is the opCode
+	outputInstruction.opCode = workingBinInstruction >> 26;
+	workingBinInstruction <<= 6;
+	// The union causes padding between bitfields
+	
+	memcpy(&(outputInstruction.rType), &(workingBinInstruction), sizeof(long));
 	dump_instruction(outputInstruction);
 	// Work out the type of the instruction, and thus data formatting
 	int instructionType = instructionFromOpcode(outputInstruction.opCode);
@@ -232,6 +242,7 @@ instruction disassembleInstruction(binaryInstruction binInstruction) {
 			
 	}*/
 	long binInstructionAfterOpCode = (binInstruction<<5);
+	free(workingBinInstruction);
 //	memcpy(&(outputInstruction.rType), &binInstructionAfterOpCode, sizeof(long));
 	return outputInstruction;
 }
@@ -295,16 +306,15 @@ void emulation_loop(const char * inputBuffer, int inputLength) {
 	// Whilst state is changing every iteration, else something's gone wrong
 	do
 	{
+
 		memcpy(&stateOld, &state, sizeof(state));
 		memcpy(&binaryInstruction, inputBuffer+state.programCounter, sizeof(instruction));
-		printBinaryInstruction(binaryInstruction);
-//		parsedInstruction = disassembleInstruction(binaryInstruction);
-//		if (main_args.verbose == 1) {
-//			dump_instruction(parsedInstruction);
-//		}
+		parsedInstruction = disassembleInstruction(binaryInstruction);
+		if (main_args.verbose == 1) {
+			dump_instruction(parsedInstruction);
+		}
 		opCodeFunction = (opCodeDictionary[parsedInstruction.opCode]);
 		opCodeFunction(&parsedInstruction, &state);
-
 	} while (memcmp(&state,&stateOld,sizeof(state)) != 0);
 	// Dump PC and registers into stderr
 	dump_state(state);
@@ -322,7 +332,7 @@ int readFile(const char * fileName, int * outputLength, char * outputBuffer) {
 
 	if (!file)
 	{
-		printf("FATAL ERROR: Unable to open file %s", fileName);
+		printf("FATAL ERROR: Unable to open file %s\n", fileName);
 		return FATAL_ERROR;
 	}
 
@@ -336,7 +346,7 @@ int readFile(const char * fileName, int * outputLength, char * outputBuffer) {
 			//Note: it is the caller's requirement to free the memory
 	if (!outputBuffer)
 	{
-		fprintf(stderr, "Memory error!");
+		fprintf(stderr, "Memory error!\n");
                                 fclose(file);
 		return FATAL_ERROR;
 	}

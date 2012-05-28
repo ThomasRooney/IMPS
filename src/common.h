@@ -14,16 +14,19 @@ char* pBinFill(long int x,char *so, char fillChar); // version with fill
 char* pBin(long int x, char *so);                   // version without fill
 #define kDisplayWidth 32
 
-char* pBin(long int x,char *so)
+char* pBin(long x,char *so)
 {
+
  char s[kDisplayWidth+1];
  int  i=kDisplayWidth;
  s[i--]=0x00;   // terminate string
+
  do
  { // fill in array from right to left
   s[i--]=(x & 1) ? '1':'0';  // determine bit
   x>>=1;  // shift right 1 bit
- } while( x > 0);
+ } while( i > 0);
+	 
  i++;   // point to last valid character
  sprintf(so,"%s",s+i); // stick it in the temp string string
  return so;
@@ -72,6 +75,8 @@ typedef struct {;
 #pragma pack(1)
 typedef struct {
 	opCode opCode:6;
+	// The union causes padding between bitfields
+	// This causes sizeof(instruction) == 5
 	union {
 		struct {
 			registerIndex R1:5;  // destination register index
