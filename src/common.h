@@ -1,7 +1,12 @@
+#ifndef COMMON_HEADER_PARSED
+
+#define COMMON_HEADER_PARSED
 #define FATAL_ERROR 10
 #define MEMORY_SIZE 65535
 #define MAX_REGISTERS 32
 #define PC_BOUNDARY 4
+
+
 
 typedef unsigned char opCode;
 typedef unsigned int registerIndex;
@@ -169,59 +174,4 @@ typedef struct {
  
 
 
-
-/**************************************************************
- * Function Pointers for Opcode emulation
- */
-
-// TODO: Implement all
-// TODO: work out a decent state structure, and change "state"
-void doOpCode_HALT(instruction * args, state * state);
-void doOpCode_ADD (instruction * args, state * state);
-void doOpCode_ADDI(instruction * args, state * state);
-void doOpCode_SUB (instruction * args, state * state);
-void doOpCode_SUBI(instruction * args, state * state);
-void doOpCode_MUL (instruction * args, state * state);
-void doOpCode_MULI(instruction * args, state * state);
-void doOpCode_LW  (instruction * args, state * state);
-void doOpCode_SW  (instruction * args, state * state);
-void doOpCode_BEQ (instruction * args, state * state);
-void doOpCode_BNE (instruction * args, state * state);
-void doOpCode_BLT (instruction * args, state * state);
-void doOpCode_BGT (instruction * args, state * state);
-void doOpCode_BLE (instruction * args, state * state);
-void doOpCode_BGE (instruction * args, state * state);
-void doOpCode_JMP (instruction * args, state * state);
-void doOpCode_JR  (instruction * args, state * state);
-void doOpCode_JAL (instruction * args, state * state);
-void doOpCode_OUT (instruction * args, state * state);
-
-/**************************************************************
- * Map between Opcode, Instruction type, and a function pointer
- */
-const opCodeDef       opCodeDefinition;
-void * opCodeDictionary [NUMBER_OF_OPCODES] =
-{
-	&doOpCode_HALT,
-	&doOpCode_ADD ,
-	&doOpCode_ADDI,
-	&doOpCode_SUB ,
-	&doOpCode_SUBI,
-	&doOpCode_MUL ,
-	&doOpCode_MULI,
-	&doOpCode_LW  ,
-	&doOpCode_SW  ,
-	&doOpCode_BEQ ,
-	&doOpCode_BNE ,
-	&doOpCode_BLT ,
-	&doOpCode_BGT ,
-	&doOpCode_BLE ,
-	&doOpCode_BGE ,
-	&doOpCode_JMP ,
-	&doOpCode_JR  ,
-	&doOpCode_JAL ,
-	&doOpCode_OUT 
-};
-
-
-
+#endif

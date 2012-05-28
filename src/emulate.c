@@ -1,4 +1,5 @@
 #include "common.h"
+#include "callbacks.h"
 
 #include <assert.h>
 #include <stdio.h>
@@ -6,120 +7,10 @@
 #include <math.h>
 #include <string.h>
 
+
+
 // We want to read the file into memory so we can deal with it in a
 // faster and easier way
-
-
-/**************************************************************************
-* Callback functions for opcode operations
-*/
-
-// no state change will call the termination in the emulation loop
-void doOpCode_HALT(instruction * args, state * state) 
-{}
-
-void doOpCode_ADD (instruction * args, state * state) {
-  state->reg[args->rType.R1] =
-  state->reg[args->rType.R2] + state->reg[args->rType.R3];
-  state->programCounter += PC_BOUNDARY;
-}
-
-void doOpCode_ADDI(instruction * args, state * state) {
-  state->reg[args->iType.R1] =
-  state->reg[args->iType.R2] + args->iType.immediateValue; 
-  state->programCounter += PC_BOUNDARY;
-}
-
-void doOpCode_SUB (instruction * args, state * state) {
-  state->reg[args->rType.R1] =
-  state->reg[args->rType.R2] - state->reg[args->rType.R3];
-  state->programCounter += PC_BOUNDARY;
-}
-
-void doOpCode_SUBI(instruction * args, state * state) {
-  state->reg[args->iType.R1] =
-  state->reg[args->iType.R2] - args->iType.immediateValue; 
-  state->programCounter += PC_BOUNDARY;
-}
-
-void doOpCode_MUL (instruction * args, state * state) {
-  state->reg[args->rType.R1] =
-  state->reg[args->rType.R2] * state->reg[args->rType.R3];
-  state->programCounter += PC_BOUNDARY;
-}
-
-void doOpCode_MULI(instruction * args, state * state) {
-  state->reg[args->iType.R1] =
-  state->reg[args->iType.R2] * args->iType.immediateValue; 
-  state->programCounter += PC_BOUNDARY;
-}
-
-void doOpCode_LW  (instruction * args, state * state) {
-  state->reg[args->iType.R1] =
-  state->MEMORY[state->reg[args->iType.R2] + args->iType.immediateValue];
-  state->programCounter += PC_BOUNDARY;
-}
-
-void doOpCode_SW  (instruction * args, state * state) {
-  state->MEMORY[state->reg[args->iType.R2] + args->iType.immediateValue] =
-  state->reg[args->iType.R1];
-  state->programCounter += PC_BOUNDARY;
-}
-
-void doOpCode_BEQ (instruction * args, state * state) {
-  if (state->reg[args->iType.R1] == state->reg[args->iType.R2]) {
-    state->programCounter += (args->iType.immediateValue * PC_BOUNDARY);
-  }
-}
-
-void doOpCode_BNE (instruction * args, state * state) {
-  if (state->reg[args->iType.R1] != state->reg[args->iType.R2]) {
-    state->programCounter += (args->iType.immediateValue * PC_BOUNDARY);
-  }
-}
-
-void doOpCode_BLT (instruction * args, state * state) {
-  if (state->reg[args->iType.R1] < state->reg[args->iType.R2]) {
-    state->programCounter += (args->iType.immediateValue * PC_BOUNDARY);
-  }
-}
-
-void doOpCode_BGT (instruction * args, state * state) {
-  if (state->reg[args->iType.R1] > state->reg[args->iType.R2]) {
-    state->programCounter += (args->iType.immediateValue * PC_BOUNDARY);
-  }
-}
-
-void doOpCode_BLE (instruction * args, state * state) {
-  if (state->reg[args->iType.R1] <= state->reg[args->iType.R2]) {
-    state->programCounter += (args->iType.immediateValue * PC_BOUNDARY);
-  }
-}
-
-void doOpCode_BGE (instruction * args, state * state) {
-  if (state->reg[args->iType.R1] >= state->reg[args->iType.R2]) {
-    state->programCounter += (args->iType.immediateValue * PC_BOUNDARY);
-  }
-}
-
-void doOpCode_JMP (instruction * args, state * state) {
-  state->programCounter = args->jType.address;
-}
-
-void doOpCode_JR  (instruction * args, state * state) {
-  state->programCounter = args->rType.R1;
-}
-
-void doOpCode_JAL (instruction * args, state * state) {
-  state->reg[31] = state->programCounter + PC_BOUNDARY;
-  state->programCounter = args->jType.address;
-}
-
-void doOpCode_OUT (instruction * args, state * state) {
-  printf("%i", state->reg[args->rType.R1]);
-  state->programCounter += PC_BOUNDARY;
-}
-
 
 void printBinaryInstruction(binaryInstruction i) {
 
@@ -128,70 +19,11 @@ void printBinaryInstruction(binaryInstruction i) {
 	 printf("Instruction: %s\n", pBin(val,so));
 }
 
-void dec2bin(unsigned int decimal, char *binary)
-{
-  int  k = 0, n = 0;
-  int  neg_flag = 0;
-  int  remain;
-  
-  int  old_decimal;  // for test
-  char temp[80];
-  // take care of negative input
-  if (decimal < 0)
-  {
-    decimal = -decimal;
-    neg_flag = 1;
-  }
-  do
-  {
-    old_decimal = decimal;   // for test
-    remain    = decimal % 2;
-    // whittle down the decimal number
-    decimal   = decimal / 2;
-    // this is a test to show the action
-     printf("%d/2 = %d  remainder = %d\n", old_decimal, decimal, remain);
-    // converts digit 0 or 1 to character '0' or '1'
-    temp[k++] = remain + '0';
-  } while (decimal > 0);
-  if (neg_flag)
-    temp[k++] = '-';       // add - sign
-  else
-    temp[k++] = ' ';       // space
-  // reverse the spelling
-  while (k >= 0)
-    binary[n++] = temp[--k];
-  binary[n-1] = 0;         // end with NULL
-}
-
-void printBinary(int decimal) {
-	char * binary = malloc(250);
-	dec2bin(decimal, binary);
-	printf("%s", binary);
-	free(binary);
-}
-
 int instructionFromOpcode(opCode opCode) {
 	if (opCode < NUMBER_OF_OPCODES) {
 		return instructionType [opCode];
 	}
 	return INSTRUCTION_TYPE_UNKNOWN;
-}
-
-
-// Inclusive
-int readBitField(binaryInstruction bin,unsigned char start, unsigned char end)
-{
-	unsigned int mask = ((2<<((end-start+1)))-1)<<(sizeof(bin)*8-end);
-	unsigned int extracted;
-	printf("Reading Bit Field...\n   start = %i\n   end = %i\n   mask =      ", start, end);
-
-	printBinary(mask);
-	printf("   decimal: %u\n   instruction: ", mask);printBinaryInstruction(bin>>start);
-	printf("   Extracted = ");
-	extracted = (int)(((bin>>start) & mask)>>start);
-	printBinary( extracted );
-	printf("   decimal: %u\n", extracted);
-	return extracted;
 }
 
 inline void endian_swap(unsigned int *x)
