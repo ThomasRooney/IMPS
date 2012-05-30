@@ -1,12 +1,15 @@
 #ifndef COMMON_HEADER_PARSED
-
 #define COMMON_HEADER_PARSED
 #define FATAL_ERROR 10
 #define MEMORY_SIZE 65535
 #define MAX_REGISTERS 32
 #define PC_BOUNDARY 4
 
-
+#include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
 
 typedef unsigned char opCode;
 typedef unsigned int registerIndex;
@@ -167,6 +170,11 @@ typedef struct {
   unsigned int programCounter;
 }state;
  
+ typedef enum stateSignal{ 
+	STATE_INCREMENTPC = 1,
+	STATE_HALT = 2,
+	STATE_CONTINUE = 3
+}stateSignal;
  
 
 

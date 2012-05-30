@@ -13,109 +13,126 @@
 
 
 // no state change will call the termination in the emulation loop
-void doOpCode_HALT(instruction * args, state * state) 
-{}
+int doOpCode_HALT(instruction * args, state * state) 
+{
+	return STATE_HALT;
+}
 
-void doOpCode_ADD (instruction * args, state * state) {
+int doOpCode_ADD (instruction * args, state * state) {
   state->reg[args->rType.R1] =
   state->reg[args->rType.R2] + state->reg[args->rType.R3];
-  state->programCounter += PC_BOUNDARY;
+  return STATE_INCREMENTPC;
 }
 
-void doOpCode_ADDI(instruction * args, state * state) {
+int doOpCode_ADDI(instruction * args, state * state) {
   state->reg[args->iType.R1] =
   state->reg[args->iType.R2] + args->iType.immediateValue; 
-  state->programCounter += PC_BOUNDARY;
+  return STATE_INCREMENTPC;
 }
 
-void doOpCode_SUB (instruction * args, state * state) {
+int doOpCode_SUB (instruction * args, state * state) {
   state->reg[args->rType.R1] =
   state->reg[args->rType.R2] - state->reg[args->rType.R3];
-  state->programCounter += PC_BOUNDARY;
+  return STATE_INCREMENTPC;
 }
 
-void doOpCode_SUBI(instruction * args, state * state) {
+int doOpCode_SUBI(instruction * args, state * state) {
   state->reg[args->iType.R1] =
   state->reg[args->iType.R2] - args->iType.immediateValue; 
-  state->programCounter += PC_BOUNDARY;
+  return STATE_INCREMENTPC;
 }
 
-void doOpCode_MUL (instruction * args, state * state) {
+int doOpCode_MUL (instruction * args, state * state) {
   state->reg[args->rType.R1] =
   state->reg[args->rType.R2] * state->reg[args->rType.R3];
-  state->programCounter += PC_BOUNDARY;
+  return STATE_INCREMENTPC;
 }
 
-void doOpCode_MULI(instruction * args, state * state) {
+int doOpCode_MULI(instruction * args, state * state) {
   state->reg[args->iType.R1] =
   state->reg[args->iType.R2] * args->iType.immediateValue; 
-  state->programCounter += PC_BOUNDARY;
+  return STATE_INCREMENTPC;
 }
 
-void doOpCode_LW  (instruction * args, state * state) {
+int doOpCode_LW  (instruction * args, state * state) {
   state->reg[args->iType.R1] =
   state->MEMORY[state->reg[args->iType.R2] + args->iType.immediateValue];
-  state->programCounter += PC_BOUNDARY;
+  return STATE_INCREMENTPC;
 }
 
-void doOpCode_SW  (instruction * args, state * state) {
+int doOpCode_SW  (instruction * args, state * state) {
   state->MEMORY[state->reg[args->iType.R2] + args->iType.immediateValue] =
   state->reg[args->iType.R1];
-  state->programCounter += PC_BOUNDARY;
+  return STATE_INCREMENTPC;
 }
 
-void doOpCode_BEQ (instruction * args, state * state) {
+int doOpCode_BEQ (instruction * args, state * state) {
   if (state->reg[args->iType.R1] == state->reg[args->iType.R2]) {
     state->programCounter += (args->iType.immediateValue * PC_BOUNDARY);
+	return STATE_CONTINUE;
   }
+  return STATE_INCREMENTPC;
 }
 
-void doOpCode_BNE (instruction * args, state * state) {
+int doOpCode_BNE (instruction * args, state * state) {
   if (state->reg[args->iType.R1] != state->reg[args->iType.R2]) {
     state->programCounter += (args->iType.immediateValue * PC_BOUNDARY);
+	return STATE_CONTINUE;
   }
+  return STATE_INCREMENTPC;
 }
 
-void doOpCode_BLT (instruction * args, state * state) {
+int doOpCode_BLT (instruction * args, state * state) {
   if (state->reg[args->iType.R1] < state->reg[args->iType.R2]) {
     state->programCounter += (args->iType.immediateValue * PC_BOUNDARY);
+    return STATE_CONTINUE;
   }
+  return STATE_INCREMENTPC;
 }
 
-void doOpCode_BGT (instruction * args, state * state) {
+int doOpCode_BGT (instruction * args, state * state) {
   if (state->reg[args->iType.R1] > state->reg[args->iType.R2]) {
     state->programCounter += (args->iType.immediateValue * PC_BOUNDARY);
+    return STATE_CONTINUE;
   }
+  return STATE_INCREMENTPC;
 }
 
-void doOpCode_BLE (instruction * args, state * state) {
+int doOpCode_BLE (instruction * args, state * state) {
   if (state->reg[args->iType.R1] <= state->reg[args->iType.R2]) {
     state->programCounter += (args->iType.immediateValue * PC_BOUNDARY);
+    return STATE_CONTINUE;
   }
+  return STATE_INCREMENTPC;
 }
 
-void doOpCode_BGE (instruction * args, state * state) {
+int doOpCode_BGE (instruction * args, state * state) {
   if (state->reg[args->iType.R1] >= state->reg[args->iType.R2]) {
     state->programCounter += (args->iType.immediateValue * PC_BOUNDARY);
+    return STATE_CONTINUE;
   }
+  return STATE_INCREMENTPC;
 }
 
-void doOpCode_JMP (instruction * args, state * state) {
+int doOpCode_JMP (instruction * args, state * state) {
   state->programCounter = args->jType.address;
+  return STATE_CONTINUE;
 }
 
-void doOpCode_JR  (instruction * args, state * state) {
+int doOpCode_JR  (instruction * args, state * state) {
   state->programCounter = args->rType.R1;
+  return STATE_CONTINUE;
 }
 
-void doOpCode_JAL (instruction * args, state * state) {
+int doOpCode_JAL (instruction * args, state * state) {
   state->reg[31] = state->programCounter + PC_BOUNDARY;
   state->programCounter = args->jType.address;
+  return STATE_CONTINUE;
 }
 
-void doOpCode_OUT (instruction * args, state * state) {
+int doOpCode_OUT (instruction * args, state * state) {
   printf("%i\n", state->reg[args->rType.R1]);
-  state->programCounter += PC_BOUNDARY;
+  return STATE_INCREMENTPC;
 }
 
 /**************************************************************

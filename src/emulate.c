@@ -1,12 +1,6 @@
 #include "common.h"
 #include "callbacks.h"
 
-#include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#include <string.h>
-
 
 
 // We want to read the file into memory so we can deal with it in a
@@ -32,12 +26,12 @@ instruction disassembleInstruction(binaryInstruction binInstruction) {
 	return outputInstruction;
 }
 
-void dump_state(state curState) {
+void dump_state(state *curState) {
 	int i;
 	fprintf(stderr, "Program State\n--------------\
-					\n  ProgramCounter: %i\n", curState.programCounter);
+					\n  ProgramCounter: %i\n", curState->programCounter);
 	for (i = 0; i < MAX_REGISTERS; i++) {
-		fprintf(stderr, "    Register[%i]: %i\n", i, curState.reg[i]);
+		fprintf(stderr, "    Register[%i]: %i\n", i, curState->reg[i]);
 	}
 }
 
@@ -67,45 +61,63 @@ void dump_instruction(instruction parsedInstruction) {
 	}
 }
 
-state initialise_state(const char * inputBuffer, const int inputLength) {
-	state virtualState;
+state *initialise_state(const char * inputBuffer, const int inputLength) {
+	state * virtualState = malloc(sizeof(state));
 	int i = 0;
 	char so[kDisplayWidth+1];
-	memset(virtualState.reg, 0, sizeof(virtualState.reg));
-	virtualState.programCounter = 0;
-	virtualState.MEMORY = calloc(MEMORY_SIZE, sizeof(char));
-	// allocate 65535 addresses with 32 bit boundary.
-	printf("Moving program data to MEMORY: First 15 values are..\n");
-	memcpy((virtualState.MEMORY), inputBuffer, inputLength);
-	for (i=0; i < 15; i++)
-	
-		printf("  M[%i]=%s\n", 4*i, pBin(*(unsigned int *)&(virtualState.MEMORY[i*4]),so));
-	
+	memset(virtualState->reg, 0, sizeof(virtualState->reg));
+	virtualState->programCounter = 0;
+	virtualState->MEMORY = calloc(MEMORY_SIZE, sizeof(char));
+	// allocate 65535 addresses with 32 bit boundary.	
+	memcpy((virtualState->MEMORY), inputBuffer, inputLength);
+	if (main_args.verbose) {
+		printf("Moving program data to MEMORY: First 15 values are..\n");
+		for (i=0; i <= 15; i++)
+		{
+			printf("  M[%i]=%s\n", 4*i, pBin(*(unsigned int *)&(virtualState->MEMORY[i*4]),so));
+		}
+	}	
 	return virtualState;
 }
 
-void emulation_loop(state programState) {
+void emulation_loop(state *programState) {
 	instruction parsedInstruction;
 	binaryInstruction binaryInstruction;
-	int testBuffer;
-	void (*opCodeFunction)(instruction *, state *);
+	stateSignal (*opCodeFunction)(instruction *, state *);
 	state stateOld;
-	// Whilst state is changing every iteration, else something's gone wrong
-	do
+	int i = 1;
+	// Every 10000 commands, check to see if you're in an infinte loop.
+	
+	while ( i>0 && ((!(i % 100))? (memcmp(&stateOld, programState, sizeof(state))):1) )
 	{
-		// absoloutely inefficient. do status messages instead
-		memcpy(&stateOld, &programState, sizeof(state));
-		memcpy(&binaryInstruction, programState.MEMORY+programState.programCounter, sizeof(binaryInstruction));
+		if(++i % 100) 
+		{
+			memcpy(&stateOld, programState, sizeof(state));
+		}
+		memcpy(&binaryInstruction, programState->MEMORY+programState->programCounter, sizeof(binaryInstruction));
 		parsedInstruction = disassembleInstruction(binaryInstruction);
 		if (main_args.verbose == 1) {
 			printf("Current State..\n");
 			dump_state(programState);
 			dump_instruction(parsedInstruction);
-			
+			 
 		}
 		opCodeFunction = (opCodeDictionary[parsedInstruction.raw.opCode]);
-		opCodeFunction(&parsedInstruction, &programState);
-	} while (memcmp(&programState,&stateOld,sizeof(state)) != 0);
+		switch (opCodeFunction(&parsedInstruction, programState))
+		{
+			case STATE_CONTINUE:
+				
+				break;
+			case STATE_HALT:
+				i = -1; 
+				break;
+			case STATE_INCREMENTPC:
+				programState->programCounter += PC_BOUNDARY;
+				break;
+		}
+		
+	} 
+	
 	// Dump PC and registers into stderr
 	printf("\nHALT!\n\n");
 	dump_state(programState);	
@@ -173,9 +185,12 @@ int main(int argc, char **argv) {
 	if (readFile(main_args.file_name, inputLength, &inputBuffer)>EXIT_SUCCESS) {
 		return FATAL_ERROR;
 	}
-	printf("File Read Success. Length is %i bits\n", (*inputLength)*32);
-	state virtualState = initialise_state(inputBuffer, *inputLength);
+	if (main_args.verbose)
+		printf("File Read Success. Length is %i bits\n", (*inputLength)*32);
+	state *virtualState = initialise_state(inputBuffer, *inputLength);
+	
 	emulation_loop(virtualState);
 	free(inputLength);
+	free(virtualState);
     return EXIT_SUCCESS;
 }
