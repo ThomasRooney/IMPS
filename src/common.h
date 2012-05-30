@@ -24,7 +24,12 @@ char* pBin(long x,char *so)
  s[i--]=0x00;   // terminate string
  do
  { // fill in array from right to left
-  s[i--]=!(i%9)?' ':(x>>=1)&&(x&1) ? '1':'0';  // determine bit, shift, add in spaceing
+  if (!(i%9))
+	s[i--] = ' ';
+  else {
+	s[i--] = (x&1) ? '1':'0';
+	(x>>=1);
+  }
  } while( i > 0); 
  i++;   // point to last valid character
  sprintf(so,"%s",s+i); // stick it in the temp string string
@@ -37,26 +42,28 @@ char* pBin(long x,char *so)
 
 #pragma pack(1)
 typedef struct {
-	opCode opCode:6;
-	registerIndex R1:5;  // destination register index
-	registerIndex R2:5; // first source register index
+	int padding :11;
 	registerIndex R3:5; // second source register index
+	registerIndex R2:5; // first source register index
+	registerIndex R1:5;  // destination register index
+	opCode opCode:6;
 }RTypeInstruction;
 
-
+ // Reversed ordering for weird endian reasons
 #pragma pack(1)
 typedef struct {
-	opCode opCode:6;
-	registerIndex R1:5;       // destination register index
-	registerIndex R2:5;       // source register index
+
 	unsigned short immediateValue:16; // 16 bits for the intermediate value
+	registerIndex R2:5;       // source register index
+	registerIndex R1:5;       // destination register index
+	opCode opCode:6;
 }ITypeInstruction;
 
 
 #pragma pack(1)
 typedef struct {;
-	opCode opCode:6;
 	 address address:26;
+	 opCode opCode:6;
 }JTypeInstruction;
 
 #pragma pack(1)
@@ -68,21 +75,10 @@ typedef struct {
 		RTypeInstruction rType;
 		ITypeInstruction iType;
 		JTypeInstruction jType;
-		/*struct {
-			registerIndex R1:5;  // destination register index
-			registerIndex R2:5; // first source register index
-			registerIndex R3:5; // second source register index
-			unsigned :11; // 11 bytes of padding to make the struct 26 bits
-		}rType;
-		struct {
-			registerIndex R1:5;       // destination register index
-			registerIndex R2:5;       // source register index
-			unsigned short immediateValue:16; // 16 bits for the intermediate value
-		}iType;
-		struct {;
-			 address address:26;
-		}jType;*/
-		opCode opCode : 6;
+		struct { 
+			int padding : 26;
+			opCode opCode : 6;
+		} raw;
 	};
 }instruction;
 

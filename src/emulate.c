@@ -37,8 +37,6 @@ inline void endian_swap(unsigned int *x)
 instruction disassembleInstruction(binaryInstruction binInstruction) {
 	instruction outputInstruction;
 	memcpy(&outputInstruction, &binInstruction, sizeof(binaryInstruction));
-	endian_swap((unsigned int *)&outputInstruction);
-	printBinaryInstruction(*(binaryInstruction *)&outputInstruction);
 	return outputInstruction;
 }
 
@@ -53,8 +51,8 @@ void dump_state(state curState) {
 
 void dump_instruction(instruction parsedInstruction) {
 	printf("Parsed Instruction Dump: \n");
-	printf("  opCode = %i\n", parsedInstruction.opCode);
-	int instructionType = instructionFromOpcode(parsedInstruction.opCode);
+	printf("  opCode = %i\n", parsedInstruction.raw.opCode);
+	int instructionType = instructionFromOpcode(parsedInstruction.raw.opCode);
 	switch(instructionType) {
 			case INSTRUCTION_TYPE_R:
 				printf("  Instruction Type R... Arguments:\n");
@@ -93,10 +91,7 @@ void emulation_loop(const char * inputBuffer, int inputLength) {
 	void (*opCodeFunction)(instruction *, state *);
 	state stateOld;
 	state state = initialise_state();
-
 	memcpy(&testBuffer, inputBuffer, 4);
-	printBinaryInstruction(testBuffer);
-
 	// Whilst state is changing every iteration, else something's gone wrong
 	do
 	{
@@ -106,7 +101,7 @@ void emulation_loop(const char * inputBuffer, int inputLength) {
 		if (main_args.verbose == 1) {
 			dump_instruction(parsedInstruction);
 		}
-		opCodeFunction = (opCodeDictionary[parsedInstruction.opCode]);
+		opCodeFunction = (opCodeDictionary[parsedInstruction.raw.opCode]);
 		opCodeFunction(&parsedInstruction, &state);
 	} while (memcmp(&state,&stateOld,sizeof(state)) != 0);
 	// Dump PC and registers into stderr
