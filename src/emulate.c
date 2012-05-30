@@ -26,14 +26,6 @@ int instructionFromOpcode(opCode opCode) {
 	return INSTRUCTION_TYPE_UNKNOWN;
 }
 
-inline void endian_swap(unsigned int *x)
-{
-    *x = (*x>>24) |
-        ((*x<<8) & 0x00FF0000) |
-        ((*x>>8) & 0x0000FF00) |
-        (*x<<24);
-}
-
 instruction disassembleInstruction(binaryInstruction binInstruction) {
 	instruction outputInstruction;
 	memcpy(&outputInstruction, &binInstruction, sizeof(binaryInstruction));
@@ -42,10 +34,10 @@ instruction disassembleInstruction(binaryInstruction binInstruction) {
 
 void dump_state(state curState) {
 	int i;
-	fprintf(stderr, "PROGRAM_HALTED\n--------------\
-					\nProgramCounter: %i\n", curState.programCounter);
+	fprintf(stderr, "Program State\n--------------\
+					\n  ProgramCounter: %i\n", curState.programCounter);
 	for (i = 0; i < MAX_REGISTERS; i++) {
-		fprintf(stderr, "  Register[%i]: %i\n", i, curState.reg[i]);
+		fprintf(stderr, "    Register[%i]: %i\n", i, curState.reg[i]);
 	}
 }
 
@@ -68,44 +60,55 @@ void dump_instruction(instruction parsedInstruction) {
 				break;
 			case INSTRUCTION_TYPE_J:
 				printf("  Instruction Type J... Arguments:\n");
-				printf("    address: %u\n", parsedInstruction.jType);
+				printf("    address: %u\n", parsedInstruction.jType.address);
     			break;
 			default:
 				printf("Unknown Instruction Type!\n");
 	}
 }
 
-state initialise_state(void) {
+state initialise_state(const char * inputBuffer, const int inputLength) {
 	state virtualState;
+	int i = 0;
+	char so[kDisplayWidth+1];
 	memset(virtualState.reg, 0, sizeof(virtualState.reg));
 	virtualState.programCounter = 0;
-	virtualState.MEMORY = calloc(MEMORY_SIZE, sizeof(int));
+	virtualState.MEMORY = calloc(MEMORY_SIZE, sizeof(char));
 	// allocate 65535 addresses with 32 bit boundary.
+	printf("Moving program data to MEMORY: First 15 values are..\n");
+	memcpy((virtualState.MEMORY), inputBuffer, inputLength);
+	for (i=0; i < 15; i++)
+	
+		printf("  M[%i]=%s\n", 4*i, pBin(*(unsigned int *)&(virtualState.MEMORY[i*4]),so));
+	
 	return virtualState;
 }
 
-void emulation_loop(const char * inputBuffer, int inputLength) {
+void emulation_loop(state programState) {
 	instruction parsedInstruction;
 	binaryInstruction binaryInstruction;
 	int testBuffer;
 	void (*opCodeFunction)(instruction *, state *);
 	state stateOld;
-	state state = initialise_state();
-	memcpy(&testBuffer, inputBuffer, 4);
 	// Whilst state is changing every iteration, else something's gone wrong
 	do
 	{
-		memcpy(&stateOld, &state, sizeof(state));
-		memcpy(&binaryInstruction, inputBuffer+state.programCounter, sizeof(binaryInstruction));
+		// absoloutely inefficient. do status messages instead
+		memcpy(&stateOld, &programState, sizeof(state));
+		memcpy(&binaryInstruction, programState.MEMORY+programState.programCounter, sizeof(binaryInstruction));
 		parsedInstruction = disassembleInstruction(binaryInstruction);
 		if (main_args.verbose == 1) {
+			printf("Current State..\n");
+			dump_state(programState);
 			dump_instruction(parsedInstruction);
+			
 		}
 		opCodeFunction = (opCodeDictionary[parsedInstruction.raw.opCode]);
-		opCodeFunction(&parsedInstruction, &state);
-	} while (memcmp(&state,&stateOld,sizeof(state)) != 0);
+		opCodeFunction(&parsedInstruction, &programState);
+	} while (memcmp(&programState,&stateOld,sizeof(state)) != 0);
 	// Dump PC and registers into stderr
-	dump_state(state);
+	printf("\nHALT!\n\n");
+	dump_state(programState);	
 }
 
 
@@ -171,7 +174,8 @@ int main(int argc, char **argv) {
 		return FATAL_ERROR;
 	}
 	printf("File Read Success. Length is %i bits\n", (*inputLength)*32);
-	emulation_loop(inputBuffer, *inputLength);
+	state virtualState = initialise_state(inputBuffer, *inputLength);
+	emulation_loop(virtualState);
 	free(inputLength);
     return EXIT_SUCCESS;
 }

@@ -163,7 +163,7 @@ const int instructionType [NUMBER_OF_OPCODES] = {
 
 typedef struct { 
   unsigned int reg [32];
-  int * MEMORY;
+  char * MEMORY;
   unsigned int programCounter;
 }state;
  

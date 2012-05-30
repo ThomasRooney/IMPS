@@ -114,7 +114,7 @@ void doOpCode_JAL (instruction * args, state * state) {
 }
 
 void doOpCode_OUT (instruction * args, state * state) {
-  printf("%i", state->reg[args->rType.R1]);
+  printf("%i\n", state->reg[args->rType.R1]);
   state->programCounter += PC_BOUNDARY;
 }
 
