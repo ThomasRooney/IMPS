@@ -84,16 +84,8 @@ void emulation_loop(state *programState) {
 	instruction parsedInstruction;
 	binaryInstruction binaryInstruction;
 	stateSignal (*opCodeFunction)(instruction *, state *);
-	state stateOld;
-	int i = 1;
-	// Every 10000 commands, check to see if you're in an infinte loop.
-	
-	while ( i>0 && ((!(i % 100))? (memcmp(&stateOld, programState, sizeof(state))):1) )
+	while ( programState->programCounter >= 0 )
 	{
-		if(++i % 100) 
-		{
-			memcpy(&stateOld, programState, sizeof(state));
-		}
 		memcpy(&binaryInstruction, programState->MEMORY+programState->programCounter, sizeof(binaryInstruction));
 		parsedInstruction = disassembleInstruction(binaryInstruction);
 		if (main_args.verbose == 1) {
@@ -108,7 +100,7 @@ void emulation_loop(state *programState) {
 			case STATE_CONTINUE:
 				break;
 			case STATE_HALT:
-				i = -1; 
+				programState->programCounter = -1; 
 				break;
 			case STATE_INCREMENTPC:
 				programState->programCounter += PC_BOUNDARY;
@@ -124,7 +116,7 @@ void emulation_loop(state *programState) {
 	} 
 	
 	// Dump PC and registers into stderr
-	printf("\nHALT!\n\n");
+	fprintf(stderr, "\nHALT!\n\n");
 	dump_state(programState);	
 }
 
