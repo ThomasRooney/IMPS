@@ -88,6 +88,7 @@ typedef struct {
 typedef struct {
 	char * file_name;
 	int verbose;
+	int step;
 }arguments;
 
 // Every instruction is 32 bits long, or 4 bytes

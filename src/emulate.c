@@ -106,7 +106,6 @@ void emulation_loop(state *programState) {
 		switch (opCodeFunction(&parsedInstruction, programState))
 		{
 			case STATE_CONTINUE:
-				
 				break;
 			case STATE_HALT:
 				i = -1; 
@@ -115,7 +114,13 @@ void emulation_loop(state *programState) {
 				programState->programCounter += PC_BOUNDARY;
 				break;
 		}
-		
+		if (main_args.step) {
+			while (1)
+			{
+				if ('\n'==getchar())
+					break;
+			}
+		}
 	} 
 	
 	// Dump PC and registers into stderr
@@ -177,8 +182,15 @@ int main(int argc, char **argv) {
 					main_args.verbose = 1;
 					printf("Debug Mode (verbose) on\n");
 			} else {
-				printf("ERROR: Unknown Argument: %s\n", argv[iter]);
+			if(strcmp(argv[iter],"-s") == 0) {
+					main_args.step = 1;
+					main_args.verbose = 1;
+					printf("Step Through Debugging Mode on\n");
 			}
+			else
+			{
+				printf("ERROR: Unknown Argument: %s\n", argv[iter]);
+			}}
 		}
 	}
 

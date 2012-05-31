@@ -120,7 +120,7 @@ int doOpCode_JMP (instruction * args, state * state) {
 }
 
 int doOpCode_JR  (instruction * args, state * state) {
-  state->programCounter = args->rType.R1;
+  state->programCounter = state->reg[args->rType.R1];
   return STATE_CONTINUE;
 }
 
