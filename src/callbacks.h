@@ -2,11 +2,6 @@
 #include "common.h"
 #endif
 
-
-/**************************************************************
- * Function Pointers for Opcode emulation
- */
-
 /**************************************************************************
 * Callback functions for opcode operations
 */
@@ -131,7 +126,7 @@ int doOpCode_JAL (instruction * args, state * state) {
 }
 
 int doOpCode_OUT (instruction * args, state * state) {
-  printf("%c", *(char *)&(state->reg[args->rType.R1]));
+  printf("%c", state->reg[args->rType.R1]);
   return STATE_INCREMENTPC;
 }
 
