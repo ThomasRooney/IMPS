@@ -4,6 +4,7 @@
 #define MEMORY_SIZE 65535
 #define MAX_REGISTERS 32
 #define PC_BOUNDARY 4
+#define kDisplayWidth 36
 
 #include <assert.h>
 #include <stdio.h>
@@ -16,31 +17,7 @@ typedef unsigned int registerIndex;
 typedef unsigned int address;
 
 /**************************************************************
- * Utility
- */
-char* pBin(long int x, char *so);                   // version without fill
-#define kDisplayWidth 36
-char* pBin(long x,char *so)
-{
- char s[kDisplayWidth+1];
- int i=kDisplayWidth;
- s[i--]=0x00;   // terminate string
- do
- { // fill in array from right to left
-  if (!(i%9))
-	s[i--] = ' ';
-  else {
-	s[i--] = (x&1) ? '1':'0';
-	(x>>=1);
-  }
- } while( i > 0); 
- i++;   // point to last valid character
- sprintf(so,"%s",s+i); // stick it in the temp string string
- return so;
-}
-
-/**************************************************************
- * Instructions
+ * Instruction Structure Definition.
  */
 
 #pragma pack(1)
@@ -159,6 +136,13 @@ const int instructionType [NUMBER_OF_OPCODES] = {
 	INSTRUCTION_TYPE_R
 };
 
+int instructionFromOpcode(opCode opCode) {
+	if (opCode < NUMBER_OF_OPCODES) {
+		return instructionType [opCode];
+	}
+	return INSTRUCTION_TYPE_UNKNOWN;
+}
+
 
 /**************************************************************
  * State information containing registers for emulation
@@ -177,6 +161,125 @@ typedef struct {
 	STATE_CONTINUE = 3
 }stateSignal;
  
+/************************************************************
+ * Parsing Arguments - Common Function
+ */
+void parseArguments(int argc, char **argv) {
+	int iter;
+	if (argc < 2 ) {
+		printf("FATAL ERROR: Filename of assembled file needs to be given\n");
+		exit(FATAL_ERROR);
+	}
+	main_args.file_name = argv[1];
+ 	if (argc > 2) {
+		for (iter=2; iter < argc; iter++) {
+			if(strcmp(argv[iter],"-v") == 0) {
+					main_args.verbose = 1;
+					printf("Debug Mode (verbose) on\n");
+			} else {
+			if(strcmp(argv[iter],"-s") == 0) {
+					main_args.step = 1;
+					main_args.verbose = 1;
+					printf("Step Through Debugging Mode on\n");
+			}
+			else
+			{
+				printf("ERROR: Unknown Argument: %s\n", argv[iter]);
+			}}
+		}
+	}
+}
 
+/************************************************************
+ * File Reading Function
+ */
+int readFile(const char * fileName, int * outputLength, char ** outputBuffer) {
+	FILE *file;
 
+	// Open file
+	file = fopen(fileName, "rb");
+
+	if (!file)
+	{
+		printf("FATAL ERROR: Unable to open file %s\n", fileName);
+		return FATAL_ERROR;
+	}
+
+	// Get file length
+	fseek(file, 0, SEEK_END);
+	*outputLength=ftell(file);
+	fseek(file, 0, SEEK_SET);
+
+	// Allocate memory
+	*outputBuffer=(char *)calloc(*outputLength+1, sizeof(char));
+			//Note: it is the caller's requirement to free the memory
+	if (!*outputBuffer)
+	{
+		fprintf(stderr, "Memory error!\n");
+                                fclose(file);
+		return FATAL_ERROR;
+	}
+
+	// Read file contents into buffer
+	fread(*outputBuffer, *outputLength, 1, file);
+	fclose(file);
+	return EXIT_SUCCESS;
+}
+
+/************************************************************************
+ * Debugging Functions
+ */
+
+// PRE: #so = kDisplayWidth
+char* pBin(unsigned int x,char *so)
+{
+ char s[kDisplayWidth+1];
+ int i=kDisplayWidth;
+ s[i--]=0x00;   // terminate string
+ do
+ { // fill in array from right to left
+  if (!(i%9))
+	s[i--] = ' ';
+  else {
+	s[i--] = (x&1) ? '1':'0';
+	(x>>=1);
+  }
+ } while( i > 0); 
+ i++;   // point to last valid character
+ sprintf(so,"%s",s+i); // stick it in the given string
+ return so;
+}
+
+void printBinaryInstruction(binaryInstruction i) {
+
+	 char so[kDisplayWidth+1]; // working buffer for pBin
+	 unsigned int val=i;
+	 printf("Instruction: %s\n", pBin(val,so));
+}
+
+void dump_instruction(instruction parsedInstruction) {
+	printf("Parsed Instruction Dump: \n");
+	printf("  opCode = %i\n", parsedInstruction.raw.opCode);
+	int instructionType = instructionFromOpcode(parsedInstruction.raw.opCode);
+	switch(instructionType) {
+			case INSTRUCTION_TYPE_R:
+				printf("  Instruction Type R... Arguments:\n");
+				printf("    R1: %u\n", parsedInstruction.rType.R1);
+				printf("    R2: %u\n", parsedInstruction.rType.R2);
+				printf("    R3: %u\n", parsedInstruction.rType.R3);
+				break;
+			case INSTRUCTION_TYPE_I:
+				printf("  Instruction Type R... Arguments:\n");
+				printf("    R1: %u\n", parsedInstruction.iType.R1);
+				printf("    R2: %u\n", parsedInstruction.iType.R2);
+				printf("    immediateValue: %u\n", parsedInstruction.iType.immediateValue);
+				break;
+			case INSTRUCTION_TYPE_J:
+				printf("  Instruction Type J... Arguments:\n");
+				printf("    address: %u\n", parsedInstruction.jType.address);
+    			break;
+			default:
+				printf("Unknown Instruction Type!\n");
+	}
+}
 #endif
