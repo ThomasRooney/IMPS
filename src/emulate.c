@@ -1,11 +1,23 @@
 #include "common.h"
 #include "callbacks.h"
 
+/**********************************************************
+ * This function simply copies the 32 bit instruction to the 
+ * union which holds it. We don't need to worry about anything 
+ * else, the bitfields hold the important information regarding 
+ * the memory structure of an instruction
+ */
+
 instruction disassembleInstruction(binaryInstruction binInstruction) {
 	instruction outputInstruction;
 	memcpy(&outputInstruction, &binInstruction, sizeof(binaryInstruction));
 	return outputInstruction;
 }
+
+/**********************************************************
+ * Called upon program termination, or more if we're in verbose 
+ * mode, this dumps the program state to stderr
+ */
 
 void dump_state(state *curState) {
 	int i;
@@ -16,6 +28,12 @@ void dump_state(state *curState) {
 	}
 }
 
+
+/**********************************************************
+ * This initialises the program state, allocating memory on the 
+ * heap and clearing all the registers and flags. The allocated 
+ * memory is all initialised to 0.
+ */
 state *initialise_state(const char * inputBuffer, const int inputLength) {
 	state * virtualState = malloc(sizeof(state));
 	int i = 0;
@@ -35,6 +53,13 @@ state *initialise_state(const char * inputBuffer, const int inputLength) {
 	return virtualState;
 }
 
+
+/**********************************************************
+ * This function runs through the program, disassembling the 
+ * instructions, and then passing them to the appropriate 
+ * callback, via a function pointer, to modify the state as in 
+ * the specification for each opcode.
+ */
 void emulation_loop(state *programState) {
 	instruction parsedInstruction;
 	binaryInstruction binaryInstruction;
@@ -76,6 +101,12 @@ void emulation_loop(state *programState) {
 	dump_state(programState);	
 }
 
+
+/**********************************************************
+ * The entry point to the program, this parses the arguments 
+ * given to the program, and initialises the state after reading 
+ * the file.
+ */
 int main(int argc, char **argv) {
 	char * inputBuffer;
 	int  * inputLength = malloc(sizeof(int)); // Kept on heap due to non-local use
@@ -93,5 +124,6 @@ int main(int argc, char **argv) {
 	emulation_loop(virtualState);
 	free(inputLength);
 	free(virtualState);
+	free(inputBuffer);
     return EXIT_SUCCESS;
 }
