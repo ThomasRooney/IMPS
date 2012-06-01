@@ -171,8 +171,8 @@ void parseArguments(int argc, char **argv) {
 		exit(FATAL_ERROR);
 	}
 	main_args.file_name = argv[1];
- 	if (argc > 2) {
-		for (iter=2; iter < argc; iter++) {
+ 	if (argc >= 2) {
+		for (iter=1; iter < argc; iter++) {
 			if(strcmp(argv[iter],"-v") == 0) {
 					main_args.verbose = 1;
 					printf("Debug Mode (verbose) on\n");
@@ -181,11 +181,18 @@ void parseArguments(int argc, char **argv) {
 					main_args.step = 1;
 					main_args.verbose = 1;
 					printf("Step Through Debugging Mode on\n");
+			} else { 
+			if(strcmp(argv[iter],"-h") == 0) {
+					printf("\nUsage: \"./emulate <filename> [-v|-s|-h]\"\n");
+					printf("Argument \"-v\": Verbose Mode\n");
+					printf("Argument \"-s\": Step Through Mode\n");
+					printf("Argument \"-h\": Help\n");
+					exit(EXIT_SUCCESS);
 			}
 			else
 			{
-				printf("ERROR: Unknown Argument: %s\n", argv[iter]);
-			}}
+				iter > 1 ? printf("ERROR: Unknown Argument: %s\n", argv[iter]) : 1;
+			}}}
 		}
 	}
 }
