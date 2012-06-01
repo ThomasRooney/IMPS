@@ -1,6 +1,8 @@
 #include "common.h"
 #include "callbacks.h"
 
+#define EMULATE
+
 /**********************************************************
  * This function simply copies the 32 bit instruction to the 
  * union which holds it. We don't need to worry about anything 

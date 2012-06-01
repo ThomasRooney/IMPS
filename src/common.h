@@ -183,7 +183,12 @@ void parseArguments(int argc, char **argv) {
 					printf("Step Through Debugging Mode on\n");
 			} else { 
 			if(strcmp(argv[iter],"-h") == 0) {
+					#ifdef EMULATE
 					printf("\nUsage: \"./emulate <filename> [-v|-s|-h]\"\n");
+					#endif
+					#ifdef ASSEMBLE
+					printf("\nUsage: \"./assemble <filename> [-v|-s|-h]\"\n");
+					#endif
 					printf("Argument \"-v\": Verbose Mode\n");
 					printf("Argument \"-s\": Step Through Mode\n");
 					printf("Argument \"-h\": Help\n");

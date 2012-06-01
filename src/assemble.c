@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <string.h>
-#include "common.h"
+#include "assemble.h"
+
+#define ASSEMBLE
 
 /***
 A basic idea of how I think this should probably be done efficiently
@@ -18,8 +20,69 @@ Optimisation is going to be more difficult. The naiive implementation will proba
 ***/
 
 
+lineLL *tokAssemblerCode(int inputLength, char * inputBuffer)
+{ 
+	symbolsLL *symbolsTokCur;
+	lineLL *lineTokHead;
+	symbolsLL *symbolsTokHEAD;
+	lineLL *lineTokCur;
+	char * str = inputBuffer;
+	char * plh;
+	char * plhr;
+	char * psh;
+	char * pshr;
+	if (main_args.verbose) 
+		printf ("Splitting string \"%s\" into tokens:\n",str);
+	plh = strtok_r (str,"\n", &plhr);
+	if (plh != NULL)
+		lineTokCur = calloc(1, sizeof(lineLL));
+		lineTokHead = lineTokCur; 
+	// parse Lines, add to assemblerTokLL 
+	while (plh != NULL)
+	{
+		str = plhr;
+		lineTokCur->line = plh;
+		if (main_args.verbose)
+			printf ("%s\n",lineTokCur->line);
+		symbolsTokCur = calloc(1, sizeof(symbolsLL));
+		psh = strtok_r(lineTokCur->line, " ", &pshr);
+		if (psh != NULL) 
+			symbolsTokCur = calloc(1, sizeof(symbolsLL));
+			symbolsTokHEAD = symbolsTokCur;
+		while (psh != NULL) {
+			symbolsTokCur->symbol = psh;
+			psh = pshr;
+			psh = strtok_r(psh, " ", &pshr);
+			if (psh != NULL) {
+				symbolsTokCur->next = calloc(1, sizeof(symbolsLL));
+				symbolsTokCur = symbolsTokCur->next;
+			}
+		}
+		lineTokCur->symbolsHEAD = symbolsTokHEAD;
+		plh = strtok_r (str, "\n", &plhr);
+		if (plh != NULL) {
+			lineTokCur->next = calloc(1, sizeof(lineLL));
+			lineTokCur = lineTokCur->next;
+		}
+	} 
+	return lineTokHead;
+}
+
+
 int main(int argc, char **argv) {
-  
+	char * inputBuffer;
+	int  * inputLength = malloc(sizeof(int));
+	lineLL * tokenisedFile;
+  // Get arguments in terms of .s file (prob)
+  parseArguments(argc, argv);
+  if (readFile(main_args.file_name, inputLength, &inputBuffer)>EXIT_SUCCESS)
+  {
+		return FATAL_ERROR;
+  }
+  if (main_args.verbose)
+		printf("File Read Success\n");
+  // Begin Tokenisation
+  tokenisedFile = tokAssemblerCode(*inputLength, inputBuffer);
   return EXIT_SUCCESS;
 }
 
