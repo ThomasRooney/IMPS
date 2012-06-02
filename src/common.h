@@ -4,6 +4,7 @@
 #define MEMORY_SIZE 65535
 #define MAX_REGISTERS 32
 #define PC_BOUNDARY 4
+#define GENERIC_ERROR -1
 #define kDisplayWidth 36
 
 #include <assert.h>
@@ -238,7 +239,7 @@ int readFile(const char * fileName, int * outputLength, char ** outputBuffer) {
 	return EXIT_SUCCESS;
 }
 
-/************************************************************************
+/*****************************************************************
  * Debugging Functions
  */
 
