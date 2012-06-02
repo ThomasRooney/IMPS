@@ -68,6 +68,68 @@ lineLL *tokAssemblerCode(int inputLength, char * inputBuffer)
 	return lineTokHead;
 }
 
+// PRE: symbols are properly pruned. i.e. in form:
+//      <opcodeSTR> <argument1> <argument2> ...
+instruction symbolsToInstruction(symbolsLL * symbols) {
+	instruction *output;
+	int opCode;
+	int registerBuffer;
+	symbolsLL * curSymbol;
+	int i = 0;
+	// lookup opCode
+	opCode = strToOpCode(symbols->symbol);
+	if (opCode == GENERIC_ERROR) {
+		printf("FATAL ERROR: opCode not found (%s)\n", symbols->symbol);
+		exit(EXIT_FAILURE);
+	}
+	output = calloc(1, sizeof(instruction));
+	output->raw.opCode = opCode;
+	for (curSymbol = symbols->next; curSymbol != NULL; curSymbol = curSymbol->next)
+	{			
+		switch (instructionFromOpcode(output->raw.opCode)) {
+			case INSTRUCTION_TYPE_NA:
+				// empty instruction, won't get called
+				break;
+			case INSTRUCTION_TYPE_R:
+				// <opCode> <R1> <R2> <R3>
+				registerBuffer = extractRegister(curSymbol->symbol);
+				switch (i++) {
+					case 0:
+						output->rType.R1 = registerBuffer;
+						break;
+					case 1:
+						output->rType.R2 = registerBuffer;
+						break;
+					case 2:
+						output->rType.R3 = registerBuffer;
+						break;
+				}
+				
+				break;
+			case INSTRUCTION_TYPE_I:
+				switch (i++) {
+					case 0:
+						registerBuffer = extractRegister(curSymbol->symbol);
+						output->iType.R1 = registerBuffer;
+						break;
+					case 1:
+						registerBuffer = extractRegister(curSymbol->symbol);
+						output->iType.R2 = registerBuffer;
+						break;
+					case 2:
+						output->iType.immediateValue = atoi(curSymbol->symbol);
+						break;
+				}
+
+				break;
+			case INSTRUCTION_TYPE_J:
+				output->jType.address = atoi(curSymbol->symbol);
+				break;
+		}
+	}
+		
+	return *output;
+};
 
 int main(int argc, char **argv) {
 	char * inputBuffer;
@@ -81,8 +143,11 @@ int main(int argc, char **argv) {
   }
   if (main_args.verbose)
 		printf("File Read Success\n");
-  // Begin Tokenisation
+  // Tokenisation
   tokenisedFile = tokAssemblerCode(*inputLength, inputBuffer);
+  // PreParser
+  // Parser
+  // Move the parsed results to binary
   return EXIT_SUCCESS;
 }
 
