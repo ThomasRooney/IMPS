@@ -52,7 +52,7 @@ typedef struct {
 
 	// The union causes padding between bitfields
 	// This causes sizeof(instruction) == 5
-	union {
+        union {
 		RTypeInstruction rType;
 		ITypeInstruction iType;
 		JTypeInstruction jType;
@@ -269,6 +269,8 @@ void printBinaryInstruction(binaryInstruction i) {
 	 unsigned int val=i;
 	 printf("Instruction: %s\n", pBin(val,so));
 }
+
+
 
 void dump_instruction(instruction parsedInstruction) {
 	printf("Parsed Instruction Dump: \n");

@@ -20,6 +20,8 @@ Optimisation is going to be more difficult. The naiive implementation will proba
 ***/
 
 
+
+
 lineLL *tokAssemblerCode(int inputLength, char * inputBuffer)
 { 
 	symbolsLL *symbolsTokCur;
@@ -68,8 +70,14 @@ lineLL *tokAssemblerCode(int inputLength, char * inputBuffer)
 	return lineTokHead;
 }
 
+
+
+
 // PRE: symbols are properly pruned. i.e. in form:
 //      <opcodeSTR> <argument1> <argument2> ...
+
+
+// Post: Willreturn pointer to "output" which now has its fiedls changed to appropriate binary values.
 instruction symbolsToInstruction(symbolsLL * symbols) {
 	instruction *output;
 	int opCode;
@@ -129,7 +137,9 @@ instruction symbolsToInstruction(symbolsLL * symbols) {
 	}
 		
 	return *output;
-};
+}
+
+
 
 int main(int argc, char **argv) {
 	char * inputBuffer;

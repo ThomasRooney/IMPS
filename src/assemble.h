@@ -1,6 +1,8 @@
 #include "common.h"
 
 
+
+
 typedef struct instructionLL{
 	instruction cur;
 	struct instructionLL *next;
