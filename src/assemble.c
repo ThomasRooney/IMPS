@@ -4,6 +4,8 @@
 
 #define ASSEMBLE
 
+#define MAX_INT 32767
+
 /***
 A basic idea of how I think this should probably be done efficiently
 
@@ -73,43 +75,60 @@ lineLL *tokAssemblerCode(int inputLength, char * inputBuffer)
 
 
 
-// PRE: symbols are properly pruned. i.e. in form:
+// PRE: symbols are in form:
 //      <opcodeSTR> <argument1> <argument2> ...
+// Without labels and .skip statements, but with .fill
 
-
-// Post: Willreturn pointer to "output" which now has its fiedls changed to appropriate binary values.
-instruction symbolsToInstruction(symbolsLL * symbols) {
-	instruction *output;
+// Post: Will return pointer to "output" which now has its fields changed to appropriate binary values.
+instruction symbolsToInstruction(symbolsLL * symbols, labelLL *labels) {
+	instruction output;
 	int opCode;
-	int registerBuffer;
+	int valueBuffer;
 	symbolsLL * curSymbol;
 	int i = 0;
+	
+	memset(&output, 0, sizeof(instruction));
+	// Deal with .fill statements
+	if (strcmp(symbols->symbol, ".fill") == 0) {
+		// memcpy the (integer) second argument into the instrction, or it's a null instruction
+		if (symbols->next != NULL) {
+			valueBuffer = atoi(symbols->next->symbol);
+			memcpy(&output, &valueBuffer, sizeof(instruction));
+		}
+		return output;
+	}
+	
 	// lookup opCode
 	opCode = strToOpCode(symbols->symbol);
 	if (opCode == GENERIC_ERROR) {
 		printf("FATAL ERROR: opCode not found (%s)\n", symbols->symbol);
 		exit(EXIT_FAILURE);
 	}
-	output = calloc(1, sizeof(instruction));
-	output->raw.opCode = opCode;
+	output.raw.opCode = opCode;
 	for (curSymbol = symbols->next; curSymbol != NULL; curSymbol = curSymbol->next)
 	{			
-		switch (instructionFromOpcode(output->raw.opCode)) {
+		// Deal with labels and Registers. Extract the value.
+		valueBuffer = extractValue(curSymbol->symbol, labels,
+					  (output.raw.opCode == INSTRUCTION_TYPE_I && i++ == 2)// case for I-Type immediate value 
+					  || output.raw.opCode == INSTRUCTION_TYPE_J);  // Case for J-Type address
+		
+		
+		// Place this value into the relevant bitfields.
+		switch (instructionFromOpcode(output.raw.opCode)) {
 			case INSTRUCTION_TYPE_NA:
-				// empty instruction, won't get called
+				// empty instruction, No values
 				break;
 			case INSTRUCTION_TYPE_R:
 				// <opCode> <R1> <R2> <R3>
-				registerBuffer = extractRegister(curSymbol->symbol);
-				switch (i++) {
+				switch (i) {
 					case 0:
-						output->rType.R1 = registerBuffer;
+						output.rType.R1 = valueBuffer;
 						break;
 					case 1:
-						output->rType.R2 = registerBuffer;
+						output.rType.R2 = valueBuffer;
 						break;
 					case 2:
-						output->rType.R3 = registerBuffer;
+						output.rType.R3 = valueBuffer;
 						break;
 				}
 				
@@ -117,26 +136,130 @@ instruction symbolsToInstruction(symbolsLL * symbols) {
 			case INSTRUCTION_TYPE_I:
 				switch (i++) {
 					case 0:
-						registerBuffer = extractRegister(curSymbol->symbol);
-						output->iType.R1 = registerBuffer;
+						output.iType.R1 = valueBuffer;
 						break;
 					case 1:
-						registerBuffer = extractRegister(curSymbol->symbol);
-						output->iType.R2 = registerBuffer;
+						output.iType.R2 = valueBuffer;
 						break;
 					case 2:
-						output->iType.immediateValue = atoi(curSymbol->symbol);
+						output.iType.immediateValue = valueBuffer;
 						break;
 				}
 
 				break;
 			case INSTRUCTION_TYPE_J:
-				output->jType.address = atoi(curSymbol->symbol);
+				output.jType.address = atoi(curSymbol->symbol);
 				break;
 		}
 	}
 		
-	return *output;
+	return output;
+}
+
+ 
+/********************************************************************
+ * This function collects labels for use in symbolsToInstruction
+ * It also changes '.skip n' statements into n '.fill' statements
+ **/
+labelLL preParse(lineLL * lineHEAD) {
+	lineLL *lCur;
+	lineLL *lBuf;
+	symbolsLL *sCur;
+	int programCounter;
+	int iter;
+	int iter2;
+	int sizeBuffer;
+	char newLine[250];
+	int skip;
+	labelLL labelHEAD;
+	labelLL *labelCur = &labelHEAD;
+	symbolsLL * sCurAddress;
+	
+	for (lCur = lineHEAD; lCur != NULL; lCur = lCur->next)
+	{
+		programCounter += sizeof(instruction);
+		iter = 0;
+		for (sCur = lCur->symbolsHEAD; sCur != NULL && iter++; sCur = sCur->next)
+		{
+			sizeBuffer = strlen(sCur->symbol);
+			// Only requirement for label is, "is the last letter a ':'?"
+			if(sCur->symbol[sizeBuffer - 1] == ':' )
+			{
+				// we have a label. Add it to labels LL
+				labelCur->next = calloc(1, sizeof(labelLL));
+				labelCur = labelCur->next;
+				labelCur->labelKey.position = programCounter + iter;
+				labelCur->labelKey.keyName = sCur->symbol;
+				labelCur->labelKey.keyName[sizeBuffer - 1] = '\0'; // Cut off ':'
+				// take down the address of sCur
+				sCurAddress = sCur;
+				// now remove the label from the symbols list
+				sCur = lCur->symbolsHEAD;
+				if (sCur == sCurAddress) {
+					lCur->symbolsHEAD = sCur->next;
+				}
+				else {
+					while (sCur->next != sCurAddress) {
+						sCur = sCur->next;
+					}
+					sCur->next = sCur->next->next;
+				}
+			} else {
+			if (strcmp(sCur->symbol, ".skip") ==0)
+			{
+				// Store current lCur->next
+				lBuf = lCur->next;
+				// Does .skip have an argument?
+				if (sCur->next == NULL) {
+					// if not, then we skip 1 line
+					skip = 1;
+					// Free the memory to avoid the memory leak.
+					free(sCur);
+				}
+				else {
+					// else we skip 'n' from ".skip n" lines
+					skip = atoi(sCur->next->symbol);
+					free(sCur);
+					free(sCur->next);
+				}
+				// Overwrite this lCur
+				strcpy(newLine, "");
+				for (iter2 = 0; iter2 < skip; iter2++)
+				{
+					strcat(newLine,".fill 0\n");
+				}
+				lCur = tokAssemblerCode(strlen(newLine), newLine);
+				while (lCur->next!=NULL)
+					lCur = lCur->next;
+				lCur->next = lBuf;
+			}}
+		}
+	}
+	return labelHEAD;
+}
+
+assembledProgram assembleProgram(preAssemblyProgram * preAssemblyHead) { 
+	preAssemblyProgram *preAssemblyCur;
+	assembledProgram output;
+	instruction * memPointer;
+	// First work out length of program
+	for (preAssemblyCur = preAssemblyHead;
+		 preAssemblyCur != NULL;
+		 preAssemblyCur=preAssemblyCur->next)
+	{
+		output.length += sizeof(instruction);		
+	}
+	// malloc the length
+	output.memory = malloc(output.length);
+	memPointer = output.memory;
+	// place the instructions onto the output
+	for (preAssemblyCur = preAssemblyHead;
+		 preAssemblyCur != NULL;
+		 preAssemblyCur=preAssemblyCur->next)
+	{
+		memcpy(memPointer++, preAssemblyCur, sizeof(instruction));
+	}	
+	return output;
 }
 
 
@@ -145,18 +268,36 @@ int main(int argc, char **argv) {
 	char * inputBuffer;
 	int  * inputLength = malloc(sizeof(int));
 	lineLL * tokenisedFile;
-  // Get arguments in terms of .s file (prob)
-  parseArguments(argc, argv);
-  if (readFile(main_args.file_name, inputLength, &inputBuffer)>EXIT_SUCCESS)
-  {
+	lineLL * lineCur;
+	assembledProgram assembled;
+	labelLL labels;
+	preAssemblyProgram preAssemblyHEAD;
+	preAssemblyProgram *preAssemblyCur = &preAssemblyHEAD;
+	
+	// Get arguments in terms of .s file (prob)
+	parseArguments(argc, argv);
+	if (readFile(main_args.file_name, inputLength, &inputBuffer)>EXIT_SUCCESS)
 		return FATAL_ERROR;
-  }
-  if (main_args.verbose)
+	
+	if (main_args.verbose)
 		printf("File Read Success\n");
-  // Tokenisation
-  tokenisedFile = tokAssemblerCode(*inputLength, inputBuffer);
-  // PreParser
-  // Parser
+	// Tokenisation
+	tokenisedFile = tokAssemblerCode(*inputLength, inputBuffer);
+	// PreParser
+	labels = preParse(tokenisedFile);
+	  
+	// Parsing Loop
+	for (lineCur = tokenisedFile;
+	   lineCur != NULL;
+	   lineCur = lineCur->next)
+	{
+		preAssemblyCur->next = calloc(1, sizeof(preAssemblyProgram));
+		preAssemblyCur = preAssemblyCur->next;
+		preAssemblyCur->curInstruction = symbolsToInstruction(lineCur->symbolsHEAD, &labels);
+	}
+	// Assemble Program
+	assembled = assembleProgram(&preAssemblyHEAD);
+	// Save the assembled program to the file specified
   // Move the parsed results to binary
   return EXIT_SUCCESS;
 }

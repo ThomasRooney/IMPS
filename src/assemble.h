@@ -13,8 +13,8 @@ typedef struct {
 	char * keyName;
 }label;
 
-typedef struct next{
-	label cur;
+typedef struct labelLL{
+	label labelKey;
 	struct labelLL * next;
 }labelLL;
 
@@ -33,6 +33,16 @@ typedef struct lineLL{
 	symbolsLL * symbolsHEAD;
 	struct lineLL * next;
 }lineLL;
+
+typedef struct preAssemblyProgram {
+	instruction curInstruction;
+	struct preAssemblyProgram * next;
+}preAssemblyProgram;
+
+typedef struct { 
+	instruction * memory;
+	int length;
+}assembledProgram;
 
 const char * opCodeMapStr[NUMBER_OF_OPCODES] = {
 	"halt",
@@ -56,6 +66,26 @@ const char * opCodeMapStr[NUMBER_OF_OPCODES] = {
 	"out"
 };
 
+/********************************************************************
+ * Utility Function for extractValue
+ **/
+
+label *inLabelLL(char * symbol, labelLL * labelsHEAD) 
+{
+	labelLL *cur;
+	for (cur = labelsHEAD; cur != NULL; cur = cur->next)
+	{
+		if (strcmp(symbol, cur->labelKey.keyName) == 0) {
+			return &cur->labelKey;
+		}
+	}
+	return NULL;
+}
+
+/********************************************************************
+ * Utility Functions for symbolsToInstruction
+ **/
+
 int strToOpCode(char * strOpCode) {
 	int i;
 	for (i=0; i < NUMBER_OF_OPCODES; i++) {
@@ -66,19 +96,33 @@ int strToOpCode(char * strOpCode) {
 	return GENERIC_ERROR;
 }
 
-int extractRegister(char * registerToken) {
+ 
+int extractValue(char * symbol, labelLL *labels , int immediateValue) {
 	int out = -1;
-	if (registerToken[0] == '$') 
+	label * labelBuf;
+	if (immediateValue) { // Case I immediateValue or J-Type Address
+		out = atoi(symbol);
+	} else {
+	if (symbol[0] == '$') //Case Register
 	{
 		// Chop off first character
-		registerToken = &registerToken[1];
-		out = atoi(registerToken);
-	}
-	if (out > 31 || out < 0)
-	{
-		printf("FATAL ERROR. Register Token: \"%s\" wasn't as expected\n", registerToken);
-		exit(EXIT_FAILURE);
-	}
+		symbol = &symbol[1];
+		out = atoi(symbol);
+		if (out > 31 || out < 0)
+		{
+			printf("FATAL ERROR. Register Token: \"%s\" wasn't as expected\n", symbol);
+			exit(EXIT_FAILURE);
+		}
+	} else { // Case: Label
+		labelBuf = inLabelLL(symbol, labels);
+		if (labelBuf == NULL)
+		{
+			printf("FATAL ERROR. Label expected.. \"%s\" wasn't as expected\n", symbol);
+			exit(EXIT_FAILURE);
+		}
+		out =  labelBuf->position;
+	}}
+	
 	return out;
 }
 
