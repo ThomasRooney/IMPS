@@ -150,6 +150,7 @@ char * strtok2(const char * str, char *twochardelim)
 		if (workingStr[working - 1] == twochardelim[0] && workingStr[working] == twochardelim[1])
 		{
 			workingStr[working - 1] = '\0';
+			break;
 		}
 	}
 	return workingStr;
