@@ -140,7 +140,7 @@ instruction symbolsToInstruction(symbolsLL * symbols, labelLL *labels) {
 						break;
 					case 3:
 						output.rType.R3 = valueBuffer;
-						break;
+						return output;
 				}
 				
 				break;
@@ -154,13 +154,13 @@ instruction symbolsToInstruction(symbolsLL * symbols, labelLL *labels) {
 						break;
 					case 3:
 						output.iType.immediateValue = valueBuffer;
-						break;
+						return output;
 				}
 
 				break;
 			case INSTRUCTION_TYPE_J:
 				output.jType.address = atoi(curSymbol->symbol);
-				break;
+				return output;
 		}
 	}
 		
