@@ -136,6 +136,8 @@ instruction symbolsToInstruction(symbolsLL * symbols, labelLL *labels) {
 				switch (i) {
 					case 1:
 						output.rType.R1 = valueBuffer;
+						if (output.raw.opCode == 18 )
+							return  output;
 						break;
 					case 2:
 						output.rType.R2 = valueBuffer;
