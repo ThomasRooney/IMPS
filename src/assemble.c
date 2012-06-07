@@ -120,7 +120,7 @@ instruction symbolsToInstruction(symbolsLL * symbols, labelLL *labels) {
 	{			
 		// Deal with labels and Registers. Extract the value.
 		valueBuffer = extractValue(curSymbol->symbol, labels,
-					  (instructionType[output.raw.opCode] == INSTRUCTION_TYPE_I && i++ == 2)// case for I-Type immediate value 
+					  (i++ == 2 && instructionType[output.raw.opCode] == INSTRUCTION_TYPE_I)// case for I-Type immediate value 
 					  || instructionType[output.raw.opCode] == INSTRUCTION_TYPE_J);  // Case for J-Type address
 		
 		
@@ -145,7 +145,7 @@ instruction symbolsToInstruction(symbolsLL * symbols, labelLL *labels) {
 				
 				break;
 			case INSTRUCTION_TYPE_I:
-				switch (i++) {
+				switch (i) {
 					case 0:
 						output.iType.R1 = valueBuffer;
 						break;
