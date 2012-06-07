@@ -263,6 +263,26 @@ assembledProgram assembleProgram(preAssemblyProgram * preAssemblyHead) {
 }
 
 
+//Should write the converted assembly to a file, gets passed poitner to beginning of converted code 
+//and also the size of each memory block.
+void writeToBinary (int *memPtr, size_t sizeMem, int numInstr) {
+
+	FILE *binFile = fopen("binaryFile.bin", "wb+");
+        int i;
+
+ 	if (binFile == NULL) {
+  		perror("File : binaryFile.bin cannot be created");
+  		exit(EXIT_FAILURE);
+	}
+        
+        for (i = 0; i<numInstr; i++){
+       		fwrite (memPtr, 1, sizeMem, binFile);
+       		memPtr++;
+	}
+
+fclose(binFile);
+}
+
 
 int main(int argc, char **argv) {
 	char * inputBuffer;
