@@ -304,7 +304,7 @@ void writeToBinary (assembledProgram assembledProgram) {
     char *fileName;
  
 	// will take file and change from .s to .bin
-	fileName = strtok (main_args.file_name,".");
+	fileName = strtok (main_args.file_name,".s");
         fileName = strcat(fileName, ".bin");
 	FILE *binFile = fopen(fileName, "wb+");
  	if (binFile == NULL) {
