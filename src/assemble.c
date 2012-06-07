@@ -348,9 +348,11 @@ int main(int argc, char **argv) {
 	   lineCur != NULL;
 	   lineCur = lineCur->next)
 	{
-		preAssemblyCur->next = calloc(1, sizeof(preAssemblyProgram));
-		preAssemblyCur = preAssemblyCur->next;
 		preAssemblyCur->curInstruction = symbolsToInstruction(lineCur->symbolsHEAD, labels);
+		if (lineCur->next != NULL) {
+			preAssemblyCur->next = calloc(1, sizeof(preAssemblyProgram));
+			preAssemblyCur = preAssemblyCur->next;
+		}
 	}
 	// Assemble Program
 	assembled = assembleProgram(&preAssemblyHEAD);
