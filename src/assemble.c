@@ -172,9 +172,10 @@ instruction symbolsToInstruction(symbolsLL * symbols, labelLL *labels) {
  * This function collects labels for use in symbolsToInstruction
  * It also changes '.skip n' statements into n '.fill' statements
  **/
-labelLL preParse(lineLL * lineHEAD) {
+labelLL *preParse(lineLL * lineHEAD) {
 	lineLL *lCur;
 	lineLL *lBuf;
+	int numLabels = 0;
 	symbolsLL *sCur;
 	int programCounter;
 	int iter;
@@ -182,8 +183,8 @@ labelLL preParse(lineLL * lineHEAD) {
 	int sizeBuffer;
 	char newLine[250];
 	int skip;
-	labelLL labelHEAD;
-	labelLL *labelCur = &labelHEAD;
+	labelLL *labelHEAD = NULL;
+	labelLL *labelCur;
 	symbolsLL * sCurAddress;
 	if (main_args.verbose)
 		printf ("\nPreParser\n\n");
@@ -208,22 +209,33 @@ labelLL preParse(lineLL * lineHEAD) {
 				if (main_args.verbose)
 					printf("Label Detected: %s\n", sCur->symbol);
 				// we have a label. Add it to labels LL
-				labelCur->next = calloc(1, sizeof(labelLL));
-				labelCur = labelCur->next;
+				if (numLabels++ == 0)
+				{
+					labelCur = calloc(1, sizeof(labelLL));
+					labelHEAD = labelCur;
+				}
+				else
+				{
+					labelCur->next = calloc(1,sizeof(labelLL));
+					labelCur = labelCur->next;
+				}
 				labelCur->labelKey.position = programCounter + iter;
 				labelCur->labelKey.keyName = sCur->symbol;
-				labelCur->labelKey.keyName[sizeBuffer - 1] = '\0'; // Cut off ':'
+				labelCur->labelKey.keyName[sizeBuffer - 1] = '\0';// Cut off ':'
 				// take down the address of sCur
 				sCurAddress = sCur;
 				// now remove the label from the symbols list
 				sCur = lCur->symbolsHEAD;
-				if (sCur == sCurAddress) {
+				if (sCur == sCurAddress) 
+				{
+					free(lCur->symbolsHEAD);
 					lCur->symbolsHEAD = sCur->next;
 				}
 				else {
 					while (sCur->next != sCurAddress) {
 						sCur = sCur->next;
 					}
+					free(sCur->next);
 					sCur->next = sCur->next->next;
 				}
 			} else {
@@ -312,7 +324,7 @@ int main(int argc, char **argv) {
 	lineLL * tokenisedFile;
 	lineLL * lineCur;
 	assembledProgram assembled;
-	labelLL labels;
+	labelLL *labels;
 	preAssemblyProgram preAssemblyHEAD;
 	preAssemblyProgram *preAssemblyCur = &preAssemblyHEAD;
 	
@@ -335,7 +347,7 @@ int main(int argc, char **argv) {
 	{
 		preAssemblyCur->next = calloc(1, sizeof(preAssemblyProgram));
 		preAssemblyCur = preAssemblyCur->next;
-		preAssemblyCur->curInstruction = symbolsToInstruction(lineCur->symbolsHEAD, &labels);
+		preAssemblyCur->curInstruction = symbolsToInstruction(lineCur->symbolsHEAD, labels);
 	}
 	// Assemble Program
 	assembled = assembleProgram(&preAssemblyHEAD);
