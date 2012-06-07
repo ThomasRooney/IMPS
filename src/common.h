@@ -204,6 +204,17 @@ void parseArguments(int argc, char **argv) {
 }
 
 /************************************************************
+ * Pauses program until enter is pressed
+ */
+void waitUntilEnter()
+{
+	while (1)
+	{
+		if ('\n'==getchar())
+			break;
+	}
+}
+/************************************************************
  * File Reading Function
  */
 int readFile(const char * fileName, int * outputLength, char ** outputBuffer) {

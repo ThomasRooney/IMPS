@@ -89,13 +89,9 @@ void emulation_loop(state *programState) {
 				programState->programCounter += PC_BOUNDARY;
 				break;
 		}
-		if (main_args.step) {
-			while (1)
-			{
-				if ('\n'==getchar())
-					break;
-			}
-		}
+		if (main_args.step) 
+			waitUntilEnter();
+		
 	} 
 	
 	// Dump PC and registers into stderr

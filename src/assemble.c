@@ -35,9 +35,14 @@ lineLL *tokAssemblerCode(int inputLength, char * inputBuffer)
 	char * plhr;
 	char * psh;
 	char * pshr;
+	int i1 = 0;
+	int i2 = 0;
 	if (main_args.verbose) 
 		printf ("Splitting string \"%s\" into tokens:\n",str);
-	plh = strtok_r (str,"\n", &plhr);
+	if (main_args.step)
+		waitUntilEnter();
+		
+	plh = strtok_r (str,"\n\r", &plhr);
 	if (plh != NULL)
 		lineTokCur = calloc(1, sizeof(lineLL));
 		lineTokHead = lineTokCur; 
@@ -47,13 +52,19 @@ lineLL *tokAssemblerCode(int inputLength, char * inputBuffer)
 		str = plhr;
 		lineTokCur->line = plh;
 		if (main_args.verbose)
-			printf ("%s\n",lineTokCur->line);
+			printf ("Line %i: %s\n", i1++,lineTokCur->line);
+		if (main_args.step)
+			waitUntilEnter();
+
 		symbolsTokCur = calloc(1, sizeof(symbolsLL));
 		psh = strtok_r(lineTokCur->line, " ", &pshr);
 		if (psh != NULL) 
 			symbolsTokCur = calloc(1, sizeof(symbolsLL));
 			symbolsTokHEAD = symbolsTokCur;
+		i2 = 0;
 		while (psh != NULL) {
+			if (main_args.verbose)
+				printf ("    Symbol %i: %s\n", i2++, psh);
 			symbolsTokCur->symbol = psh;
 			psh = pshr;
 			psh = strtok_r(psh, " ", &pshr);
@@ -161,9 +172,10 @@ instruction symbolsToInstruction(symbolsLL * symbols, labelLL *labels) {
  * This function collects labels for use in symbolsToInstruction
  * It also changes '.skip n' statements into n '.fill' statements
  **/
-labelLL preParse(lineLL * lineHEAD) {
+labelLL *preParse(lineLL * lineHEAD) {
 	lineLL *lCur;
 	lineLL *lBuf;
+	int numLabels = 0;
 	symbolsLL *sCur;
 	int programCounter;
 	int iter;
@@ -171,37 +183,59 @@ labelLL preParse(lineLL * lineHEAD) {
 	int sizeBuffer;
 	char newLine[250];
 	int skip;
-	labelLL labelHEAD;
-	labelLL *labelCur = &labelHEAD;
+	labelLL *labelHEAD = NULL;
+	labelLL *labelCur;
 	symbolsLL * sCurAddress;
+	if (main_args.verbose)
+		printf ("\nPreParser\n\n");
+
 	
 	for (lCur = lineHEAD; lCur != NULL; lCur = lCur->next)
 	{
 		programCounter += sizeof(instruction);
 		iter = 0;
-		for (sCur = lCur->symbolsHEAD; sCur != NULL && iter++; sCur = sCur->next)
+		for (sCur = lCur->symbolsHEAD; sCur != NULL; sCur = sCur->next)
 		{
+			iter++;
+			
 			sizeBuffer = strlen(sCur->symbol);
+			if (main_args.verbose)
+				printf ("Symbol %i: %s..last=%c\n", iter, sCur->symbol, sCur->symbol[sizeBuffer - 1]);
+			if (main_args.step)
+				waitUntilEnter();
 			// Only requirement for label is, "is the last letter a ':'?"
 			if(sCur->symbol[sizeBuffer - 1] == ':' )
 			{
+				if (main_args.verbose)
+					printf("Label Detected: %s\n", sCur->symbol);
 				// we have a label. Add it to labels LL
-				labelCur->next = calloc(1, sizeof(labelLL));
-				labelCur = labelCur->next;
+				if (numLabels++ == 0)
+				{
+					labelCur = calloc(1, sizeof(labelLL));
+					labelHEAD = labelCur;
+				}
+				else
+				{
+					labelCur->next = calloc(1,sizeof(labelLL));
+					labelCur = labelCur->next;
+				}
 				labelCur->labelKey.position = programCounter + iter;
 				labelCur->labelKey.keyName = sCur->symbol;
-				labelCur->labelKey.keyName[sizeBuffer - 1] = '\0'; // Cut off ':'
+				labelCur->labelKey.keyName[sizeBuffer - 1] = '\0';// Cut off ':'
 				// take down the address of sCur
 				sCurAddress = sCur;
 				// now remove the label from the symbols list
 				sCur = lCur->symbolsHEAD;
-				if (sCur == sCurAddress) {
+				if (sCur == sCurAddress) 
+				{
+					free(lCur->symbolsHEAD);
 					lCur->symbolsHEAD = sCur->next;
 				}
 				else {
 					while (sCur->next != sCurAddress) {
 						sCur = sCur->next;
 					}
+					free(sCur->next);
 					sCur->next = sCur->next->next;
 				}
 			} else {
@@ -294,7 +328,7 @@ int main(int argc, char **argv) {
 	lineLL * tokenisedFile;
 	lineLL * lineCur;
 	assembledProgram assembled;
-	labelLL labels;
+	labelLL *labels;
 	preAssemblyProgram preAssemblyHEAD;
 	preAssemblyProgram *preAssemblyCur = &preAssemblyHEAD;
 	
@@ -317,7 +351,7 @@ int main(int argc, char **argv) {
 	{
 		preAssemblyCur->next = calloc(1, sizeof(preAssemblyProgram));
 		preAssemblyCur = preAssemblyCur->next;
-		preAssemblyCur->curInstruction = symbolsToInstruction(lineCur->symbolsHEAD, &labels);
+		preAssemblyCur->curInstruction = symbolsToInstruction(lineCur->symbolsHEAD, labels);
 	}
 	// Assemble Program
 	assembled = assembleProgram(&preAssemblyHEAD);
