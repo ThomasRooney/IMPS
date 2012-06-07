@@ -91,7 +91,7 @@ lineLL *tokAssemblerCode(int inputLength, char * inputBuffer)
 // Without labels and .skip statements, but with .fill
 
 // Post: Will return pointer to "output" which now has its fields changed to appropriate binary values.
-instruction symbolsToInstruction(symbolsLL * symbols, labelLL *labels) {
+instruction symbolsToInstruction(symbolsLL * symbols, labelLL *labels, int programCounter) {
 	instruction output;
 	int opCode;
 	int valueBuffer;
@@ -124,7 +124,16 @@ instruction symbolsToInstruction(symbolsLL * symbols, labelLL *labels) {
 		valueBuffer = extractValue(curSymbol->symbol, labels,
 					  (i++ == 2 && instructionType[output.raw.opCode] == INSTRUCTION_TYPE_I)// case for I-Type immediate value 
 					  || instructionType[output.raw.opCode] == INSTRUCTION_TYPE_J);  // Case for J-Type address
-		
+		// Special Case for branching.
+		if (opCode >= 9 && opCode <= 14)
+		{
+			labelBuf = inLabelLL(curSymbol->symbol, labels);
+			if (labelBuf != NULL)
+			{
+				valueBuffer = (labelBuf->position - programCounter);
+			}
+			valueBuffer = valueBuffer / 4;
+		}
 		
 		// Place this value into the relevant bitfields.
 		switch (instructionFromOpcode(output.raw.opCode)) {
@@ -136,7 +145,7 @@ instruction symbolsToInstruction(symbolsLL * symbols, labelLL *labels) {
 				switch (i) {
 					case 1:
 						output.rType.R1 = valueBuffer;
-						if (output.raw.opCode == 18 )
+						if (output.raw.opCode == 18 !! output.raw.opCode == 16)
 							return  output;
 						break;
 					case 2:
@@ -330,6 +339,7 @@ int main(int argc, char **argv) {
 	char * inputBuffer;
 	int  * inputLength = malloc(sizeof(int));
 	lineLL * tokenisedFile;
+	int programCounter = 0;
 	lineLL * lineCur;
 	assembledProgram assembled;
 	labelLL *labels;
@@ -353,7 +363,8 @@ int main(int argc, char **argv) {
 	   lineCur != NULL;
 	   lineCur = lineCur->next)
 	{
-		preAssemblyCur->curInstruction = symbolsToInstruction(lineCur->symbolsHEAD, labels);
+		preAssemblyCur->curInstruction = symbolsToInstruction(lineCur->symbolsHEAD, labels, programCounter);
+		programCounter+=4;
 		if (lineCur->next != NULL) {
 			preAssemblyCur->next = calloc(1, sizeof(preAssemblyProgram));
 			preAssemblyCur = preAssemblyCur->next;
