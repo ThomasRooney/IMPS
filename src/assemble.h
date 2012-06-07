@@ -107,6 +107,11 @@ int strToOpCode(char * strOpCode) {
 int extractValue(char * symbol, labelLL *labels , int immediateValue) {
 	int out = -1;
 	label * labelBuf;
+	labelBuf = inLabelLL(symbol, labels);
+	if (labelBuf!=NULL) {
+		out =  labelBuf->position;
+		return out;
+	}
 	if (immediateValue) { // Case I immediateValue or J-Type Address
 		// Make sure its not hex
 		if (symbol[0] == '0' && symbol[1] == 'x') {
@@ -127,13 +132,8 @@ int extractValue(char * symbol, labelLL *labels , int immediateValue) {
 			exit(EXIT_FAILURE);
 		}
 	} else { // Case: Label
-		labelBuf = inLabelLL(symbol, labels);
-		if (labelBuf == NULL)
-		{
-			printf("FATAL ERROR. Label expected.. \"%s\" wasn't as expected\n", symbol);
-			exit(EXIT_FAILURE);
-		}
-		out =  labelBuf->position;
+		printf("FATAL ERROR. Label expected.. \"%s\" wasn't as expected\n", symbol);
+		exit(EXIT_FAILURE);
 	}}
 	
 	return out;
