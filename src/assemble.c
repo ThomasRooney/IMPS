@@ -119,6 +119,8 @@ instruction symbolsToInstruction(symbolsLL * symbols, labelLL *labels, int progr
 		exit(EXIT_FAILURE);
 	}
 	output.raw.opCode = opCode;
+	if (instructionFromOpcode(opCode) == INSTRUCTION_TYPE_NA)
+		return output;
 	for (curSymbol = symbols->next; curSymbol != NULL; curSymbol = curSymbol->next)
 	{			
 		// Deal with labels and Registers. Extract the value.
@@ -140,7 +142,7 @@ instruction symbolsToInstruction(symbolsLL * symbols, labelLL *labels, int progr
 		switch (instructionFromOpcode(output.raw.opCode)) {
 			case INSTRUCTION_TYPE_NA:
 				// empty instruction, No values
-				break;
+				return output;
 			case INSTRUCTION_TYPE_R:
 				// <opCode> <R1> <R2> <R3>
 				switch (i) {
