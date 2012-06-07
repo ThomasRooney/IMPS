@@ -96,6 +96,7 @@ instruction symbolsToInstruction(symbolsLL * symbols, labelLL *labels, int progr
 	int opCode;
 	int valueBuffer;
 	symbolsLL * curSymbol;
+	label *labelBuf;
 	int i = 0;
 	memset(&output, 0, sizeof(instruction));
 	if (symbols->symbol == NULL) {
@@ -145,7 +146,7 @@ instruction symbolsToInstruction(symbolsLL * symbols, labelLL *labels, int progr
 				switch (i) {
 					case 1:
 						output.rType.R1 = valueBuffer;
-						if (output.raw.opCode == 18 !! output.raw.opCode == 16)
+						if (output.raw.opCode == 18 || output.raw.opCode == 16)
 							return  output;
 						break;
 					case 2:
