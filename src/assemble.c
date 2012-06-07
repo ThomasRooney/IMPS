@@ -97,8 +97,10 @@ instruction symbolsToInstruction(symbolsLL * symbols, labelLL *labels) {
 	int valueBuffer;
 	symbolsLL * curSymbol;
 	int i = 0;
-	
 	memset(&output, 0, sizeof(instruction));
+	if (symbols->symbol == NULL) {
+		return output;
+	}
 	// Deal with .fill statements
 	if (strcmp(symbols->symbol, ".fill") == 0) {
 		// memcpy the (integer) second argument into the instrction, or it's a null instruction
