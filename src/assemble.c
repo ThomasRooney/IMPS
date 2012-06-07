@@ -132,8 +132,8 @@ instruction symbolsToInstruction(symbolsLL * symbols, labelLL *labels, int progr
 			if (labelBuf != NULL)
 			{
 				valueBuffer = (labelBuf->position - programCounter);
+				
 			}
-			valueBuffer = valueBuffer / 4;
 		}
 		
 		// Place this value into the relevant bitfields.
@@ -167,7 +167,7 @@ instruction symbolsToInstruction(symbolsLL * symbols, labelLL *labels, int progr
 						output.iType.R2 = valueBuffer;
 						break;
 					case 3:
-						output.iType.immediateValue = valueBuffer;
+						output.iType.immediateValue = (opCode >= 9 && opCode <= 14) ? valueBuffer/4 : valueBuffer;
 						return output;
 				}
 
