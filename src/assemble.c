@@ -192,11 +192,10 @@ labelLL *preParse(lineLL * lineHEAD) {
 	
 	for (lCur = lineHEAD; lCur != NULL; lCur = lCur->next)
 	{
-		programCounter += sizeof(instruction);
 		iter = 0;
 		for (sCur = lCur->symbolsHEAD; sCur != NULL; sCur = sCur->next)
 		{
-			iter++;
+
 			
 			sizeBuffer = strlen(sCur->symbol);
 			if (main_args.verbose)
@@ -267,7 +266,9 @@ labelLL *preParse(lineLL * lineHEAD) {
 					lCur = lCur->next;
 				lCur->next = lBuf;
 			}}
+			iter++;
 		}
+		programCounter += sizeof(instruction);
 	}
 	return labelHEAD;
 }
