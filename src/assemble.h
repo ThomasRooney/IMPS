@@ -69,6 +69,13 @@ const char * opCodeMapStr[NUMBER_OF_OPCODES] = {
 /********************************************************************
  * Utility Function for extractValue
  **/
+ // PRE: Definitely in the correct form: "0x..."
+int strHexToDec(char * hex)
+{
+	// blah
+	char * p;
+	return strtol(hex,  &p, 16);
+}
 
 label *inLabelLL(char * symbol, labelLL * labelsHEAD) 
 {
@@ -101,7 +108,13 @@ int extractValue(char * symbol, labelLL *labels , int immediateValue) {
 	int out = -1;
 	label * labelBuf;
 	if (immediateValue) { // Case I immediateValue or J-Type Address
-		out = atoi(symbol);
+		// Make sure its not hex
+		if (symbol[0] == '0' && symbol[1] == 'x') {
+			out = strHexToDec(symbol);
+		}
+		else {
+			out = atoi(symbol);
+		}
 	} else {
 	if (symbol[0] == '$') //Case Register
 	{
