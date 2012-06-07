@@ -142,7 +142,7 @@ int extractValue(char * symbol, labelLL *labels , int immediateValue) {
 char * strtok2(const char * str, char *twochardelim)
 {
 	int working = 0;
-	char workingStr[255];
+	char * workingStr = malloc(255);
 	strcpy(workingStr, str);
 	int len = strlen(str);
 	while (working++ < len)
