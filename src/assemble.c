@@ -35,9 +35,14 @@ lineLL *tokAssemblerCode(int inputLength, char * inputBuffer)
 	char * plhr;
 	char * psh;
 	char * pshr;
+	int i1 = 0;
+	int i2 = 0;
 	if (main_args.verbose) 
 		printf ("Splitting string \"%s\" into tokens:\n",str);
-	plh = strtok_r (str,"\n", &plhr);
+	if (main_args.step)
+		waitUntilEnter();
+		
+	plh = strtok_r (str,"\n\r", &plhr);
 	if (plh != NULL)
 		lineTokCur = calloc(1, sizeof(lineLL));
 		lineTokHead = lineTokCur; 
@@ -47,13 +52,19 @@ lineLL *tokAssemblerCode(int inputLength, char * inputBuffer)
 		str = plhr;
 		lineTokCur->line = plh;
 		if (main_args.verbose)
-			printf ("%s\n",lineTokCur->line);
+			printf ("Line %i: %s\n", i1++,lineTokCur->line);
+		if (main_args.step)
+			waitUntilEnter();
+
 		symbolsTokCur = calloc(1, sizeof(symbolsLL));
 		psh = strtok_r(lineTokCur->line, " ", &pshr);
 		if (psh != NULL) 
 			symbolsTokCur = calloc(1, sizeof(symbolsLL));
 			symbolsTokHEAD = symbolsTokCur;
+		i2 = 0;
 		while (psh != NULL) {
+			if (main_args.verbose)
+				printf ("    Symbol %i: %s\n", i2++, psh);
 			symbolsTokCur->symbol = psh;
 			psh = pshr;
 			psh = strtok_r(psh, " ", &pshr);
@@ -174,17 +185,28 @@ labelLL preParse(lineLL * lineHEAD) {
 	labelLL labelHEAD;
 	labelLL *labelCur = &labelHEAD;
 	symbolsLL * sCurAddress;
+	if (main_args.verbose)
+		printf ("\nPreParser\n\n");
+
 	
 	for (lCur = lineHEAD; lCur != NULL; lCur = lCur->next)
 	{
 		programCounter += sizeof(instruction);
 		iter = 0;
-		for (sCur = lCur->symbolsHEAD; sCur != NULL && iter++; sCur = sCur->next)
+		for (sCur = lCur->symbolsHEAD; sCur != NULL; sCur = sCur->next)
 		{
+			iter++;
+			
 			sizeBuffer = strlen(sCur->symbol);
+			if (main_args.verbose)
+				printf ("Symbol %i: %s..last=%c\n", iter, sCur->symbol, sCur->symbol[sizeBuffer - 1]);
+			if (main_args.step)
+				waitUntilEnter();
 			// Only requirement for label is, "is the last letter a ':'?"
 			if(sCur->symbol[sizeBuffer - 1] == ':' )
 			{
+				if (main_args.verbose)
+					printf("Label Detected: %s\n", sCur->symbol);
 				// we have a label. Add it to labels LL
 				labelCur->next = calloc(1, sizeof(labelLL));
 				labelCur = labelCur->next;
