@@ -139,4 +139,18 @@ int extractValue(char * symbol, labelLL *labels , int immediateValue) {
 	return out;
 }
 
-
+char * strtok2(const char * str, char *twochardelim)
+{
+	int working = 0;
+	char * workingStr = "";
+	strcpy(workingStr, str);
+	int len = strlen(str);
+	while (working++ < len)
+	{
+		if (workingStr[working - 1] == twochardelim[0] && workingStr[working] == twochardelim[1])
+		{
+			workingStr[working - 1] = '\0';
+		}
+	}
+	return workingStr;
+}
