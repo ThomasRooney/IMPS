@@ -163,7 +163,7 @@ instruction symbolsToInstruction(symbolsLL * symbols, labelLL *labels) {
 
 				break;
 			case INSTRUCTION_TYPE_J:
-				output.jType.address = atoi(curSymbol->symbol);
+				output.jType.address = valueBuffer;
 				return output;
 		}
 	}
