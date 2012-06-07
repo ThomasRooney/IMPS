@@ -276,6 +276,7 @@ labelLL *preParse(lineLL * lineHEAD) {
 assembledProgram assembleProgram(preAssemblyProgram * preAssemblyHead) { 
 	preAssemblyProgram *preAssemblyCur;
 	assembledProgram output;
+	output.length = 0;
 	instruction * memPointer;
 	// First work out length of program
 	for (preAssemblyCur = preAssemblyHead;
