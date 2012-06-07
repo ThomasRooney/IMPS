@@ -132,13 +132,13 @@ instruction symbolsToInstruction(symbolsLL * symbols, labelLL *labels) {
 			case INSTRUCTION_TYPE_R:
 				// <opCode> <R1> <R2> <R3>
 				switch (i) {
-					case 0:
+					case 1:
 						output.rType.R1 = valueBuffer;
 						break;
-					case 1:
+					case 2:
 						output.rType.R2 = valueBuffer;
 						break;
-					case 2:
+					case 3:
 						output.rType.R3 = valueBuffer;
 						break;
 				}
@@ -146,13 +146,13 @@ instruction symbolsToInstruction(symbolsLL * symbols, labelLL *labels) {
 				break;
 			case INSTRUCTION_TYPE_I:
 				switch (i) {
-					case 0:
+					case 1:
 						output.iType.R1 = valueBuffer;
 						break;
-					case 1:
+					case 2:
 						output.iType.R2 = valueBuffer;
 						break;
-					case 2:
+					case 3:
 						output.iType.immediateValue = valueBuffer;
 						break;
 				}
