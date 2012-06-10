@@ -2,18 +2,94 @@
 
 \begin{document}
 
-\title{Extending The IMPS ... with ... }
+\title{Extending The IMPS Project with optimisation routines. }
 \author{TODO}
 
 \maketitle
 
 \section{Introduction}
 
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor
-incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
-nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-culpa qui officia deserunt mollit anim id est laborum.
+When we were asked to perform an unspecified extension of the assembler/emulator, one of my immediate thoughts was upon optimisation. Initially disregarding this as far too complicated, I happened upon a bit of creativity. One of the opensource projects that I follow is known as the openCog project - short for 'Open Cognition' and is a project with an ultimate aim to build an AGI. In the process of doing so over a long period of time, they have written or integrated some very effective pieces of A.I. code. 
 
-\end{document}
+One of these is known as MOSES. This stands for Meta-Optimising Semantic Evolutionary Search, and it can generate simple algebraic programs based around either a scoring function or test data which the programs will have produce. It was originally written by Moshe Looks (http://metacog.org/doc.html), for his PHD thesis: "Competant Program Evolution". Whilst following some of the current work that was going on for the development of the program, I recognised that the algebraic output it produced was very similar to assembler code, and it would perhaps only be a simple map in between IMPS opcodes and MOSES's output. 
+
+To explore this idea, I sent off an email to the google groups page where the current discussion on the openCog project goes on:
+
+-----------------------------------------------------------
+[opencog] Use of MOSES to optimize Assembly Code
+
+Thomas Rooney
+Jun 1 (9 days ago)
+-----------------------------------------------------------
+to opencog 
+Hi All,
+
+I'm a student at Imperial College London, and I've been following
+openCog for a while now, finding it an absolutely fascinating trove of A.I. techniques towards solving the AGI problem. One of the projects that particularly interests me is MOSES, and an idea which struck me recently is its use in optimization, specifically assembler code. 
+I am writing an assembler for a reduced instruction set as part of my university course, and have been looking at extensions that could be made upon it. I've attempted to go through the Moshe Looks's founding thesis "Competent Program Evolution", and I have found it to be beyond my current understanding, and as such cannot really make an accurate guess on how feasible the idea is. I am currently thinking of simply hooking 'expect' into its compiled binaries and mapping the assembler instruction tree I have into the format required by MOSES, to perform a proof of concept of the idea, as opposed to trying to work with atomspace and integrating MOSES source directly.
+
+It would be great if I could get some informed opinions on the feasibility of the idea, from those currently working with it.
+
+Kind Regards,
+
+Thomas Rooney
+-----------------------------------------------------------
+Ben Goertzel ben@goertzel.org via googlegroups.com 
+Jun 9 (1 day ago)
+
+to opencog 
+This does seem possible, but would be more work than you're thinking...
+
+The Atomspace would not need to be involved, but you'd need to create
+primitive MOSES operations corresponding to the assembly language
+operators, and then create Reduct rules embodying the algebraic
+properties of these operators...
+
+Then Reduct could put assembler programs in hierarchical normal form,
+and you could use MOSES to search for programs equivalent to, but
+faster than, the program you started with...
+
+-- Ben
+-----------------------------------------------------------
+Linas Vepstas linasvepstas@gmail.com
+Jun 9 (1 day ago)
+
+to opencog, me 
+The current technique that is gaining academic interest is called "superoptimization".    This is done by building a database of millions of short instruction sequences; whenever the compiler emits one, you look it up, and see if there is an equivalent but shorter one.  The database is created by simply enumerating all possible instruction sequences of 2,3,4,5 insns long.  The hard part is deciding when two different insn sequences are identical.  Its not enough to find some sequence that seems to be equivalent, one needs to actually *prove* that they're equivalent on all 2^64 times 2^64 = 2^128 possible inputs; this is too large to test, but can be proven.   One can decide this using "answer set programming" (which is what I would recommend), or by using "satsifiability modulo theories" (which some people are interested in).   Its an interesting approach: you let machine learning discover equivalent sequences, rather than having humans work them out.  Unfortunately, most of this work is at the PhD level; there are several recent theses which can be googled for this.   Three's some interest in doing this for either gcc or clang.
+
+Actually, its way cooler than that. When you have a prover, as above, then you can prove equivalence of snippets of C code.  Which means you can do optimization on source, not on assembly.  I actually prototyped this for a job, it worked :-)
+
+I found that learning ASP gave me an entirely new perspective on PLN and similar ideas.   ASP is very tricky at first, kind of hard to figure out, but once you get the hang of it, its actually fairly easy.  It just forces you to think in a very different way.  Oh, and you can't just re about it; you actually need to actually do something with it, to learn it.
+
+-----------------------------------------------------------
+Murilo Saraiva de Queiroz muriloq@gmail.com
+5:32 PM (22 hours ago)
+
+to opencog, me 
+Ricardo Bittencourt (who worked with us here in Brazil for a brief period and now it's at Google) did exactly this, but using as a target an 8-bit microprocessor (the Zilog Z80, quite similar to Intel 8085). Since the input space is much smaller (the number of processor registers and their widths is very small) it a lot more feasible... He used it to reduce the size of code submitted to 4-kilobyte game competitions. 
+
+Here's the page (sorry, Portuguese only):  http://www.ricbit.com/mundobizarro/superopt.php  
+
+muriloq
+Murilo Saraiva de Queiroz, MSc
+Hardware Engineer at NVIDIA
+
+-----------------------------------------------------------
+Linas Vepstas linasvepstas@gmail.com
+6:20 PM (22 hours ago)
+
+to opencog, me 
+Not to give away secrets to nvidia, but: it's actually now feasible to do with 32 and 64 bit processors; the trick is to search for inputs where insn sequences are unequal; and modern-day ASP & SMT solvers are quite capable of this, being based on the modern SAT solver techniques.
+
+-----------------------------------------------------------
+Murilo Saraiva de Queiroz muriloq@gmail.com
+1:48 PM (2 hours ago)
+
+to opencog, me 
+This was just a hobby project (the community of enthusiasts and collectors of the MSX, an old 8-bit microcomputer platform popular in Brazil, Japan and Europe in the 1980s, is quite active so there are a lot of interesting projects based on it - the simplicity creates interesting constraints for this kind of stuff)
+-----------------------------------------------------------
+ 
+The result of this discussion is the attempt at optimisation code that I will be building over the next few days. This is in C++ as opposed to C, but in my mind that should be acceptable for the project, as it is a superset of C. This is mostly an experiment for me with using the openCog code in a practical application, and quite possibly will fail - in which case I'll probably attempt to blast out a more simple extension at the last minute.
+
+Eclipse CDT files are included in the repository due to the complexity of building the code, and the unlikelihood that the dependencies will be satisfied for building in the DOC build environment. The hope is to move these to CMAKE files when the project is finished.
+
