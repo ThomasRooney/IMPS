@@ -65,6 +65,7 @@ typedef struct {
 
 typedef struct {
 	char * file_name;
+        char * output_file;
 	int verbose;
 	int step;
 }arguments;
@@ -194,11 +195,14 @@ void parseArguments(int argc, char **argv) {
 					printf("Argument \"-s\": Step Through Mode\n");
 					printf("Argument \"-h\": Help\n");
 					exit(EXIT_SUCCESS);
+			} else {
+                        if (iter == 1) 
+                                main_args.output_file = argv[2];
+                        else
+ 				iter > 1 ? printf("ERROR: Unknown Argument: %s\n", argv[iter]) : 1;
 			}
-			else
-			{
-				iter > 1 ? printf("ERROR: Unknown Argument: %s\n", argv[iter]) : 1;
-			}}}
+			}
+			}
 		}
 	}
 }
