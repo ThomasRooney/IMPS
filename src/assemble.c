@@ -1,8 +1,10 @@
+#define ASSEMBLE
+
 #include <stdlib.h>
 #include <string.h>
 #include "assemble.h"
 
-#define ASSEMBLE
+
 
 #define MAX_INT 32767
 

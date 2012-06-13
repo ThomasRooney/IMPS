@@ -168,25 +168,22 @@ typedef struct {
  */
 void parseArguments(int argc, char **argv) {
 	int iter;
-	if (argc < 2 ) {
+	if (argc < 2) {
 		printf("FATAL ERROR: Filename of assembled file needs to be given\n");
 		exit(FATAL_ERROR);
 	}
-	main_args.file_name = argv[1];
-	#ifdef assemble
-	if (argc < 3) {
+	else
+		main_args.file_name = argv[1];
+	#ifdef ASSEMBLE
+	if (argc < 3 && strcmp(argv[1], "-h") != 0) {
 		printf("FATAL ERROR: Filename of output file needs to be given\n");
 		exit(FATAL_ERROR);
 	}
-	main_args.output_file = argv[2];
+	else 
+		main_args.output_file = argv[2];
 	#endif
  	if (argc >= 2) {
-		for (
-		#ifdef assemble
-		iter = 2;
-		#else
-		iter = 1;
-		#endif
+		for (iter = 1;
 		iter < argc; iter++) {
 			if(strcmp(argv[iter],"-v") == 0) {
 				main_args.verbose = 1;
@@ -209,7 +206,12 @@ void parseArguments(int argc, char **argv) {
 				printf("Argument \"-h\": Help\n");
 				exit(EXIT_SUCCESS);
 			} else {
-				iter > 1 ? printf("ERROR: Unknown Argument: %s\n", argv[iter]) : 1;
+				#ifdef ASSEMBLE
+				iter > 2 ?
+				#else
+				iter > 1 ?
+				#endif
+				printf("ERROR: Unknown Argument: %s\n", argv[iter]) : 1;
 			}
 			}
 			}
