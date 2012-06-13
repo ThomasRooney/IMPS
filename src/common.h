@@ -65,7 +65,7 @@ typedef struct {
 
 typedef struct {
 	char * file_name;
-        char * output_file;
+    char * output_file;
 	int verbose;
 	int step;
 }arguments;
@@ -173,33 +173,43 @@ void parseArguments(int argc, char **argv) {
 		exit(FATAL_ERROR);
 	}
 	main_args.file_name = argv[1];
+	#ifdef assemble
+	if (argc < 3) {
+		printf("FATAL ERROR: Filename of output file needs to be given\n");
+		exit(FATAL_ERROR);
+	}
+	main_args.output_file = argv[2];
+	#endif
  	if (argc >= 2) {
-		for (iter=1; iter < argc; iter++) {
+		for (
+		#ifdef assemble
+		iter = 2;
+		#else
+		iter = 1;
+		#endif
+		iter < argc; iter++) {
 			if(strcmp(argv[iter],"-v") == 0) {
-					main_args.verbose = 1;
-					printf("Debug Mode (verbose) on\n");
+				main_args.verbose = 1;
+				printf("Debug Mode (verbose) on\n");
 			} else {
 			if(strcmp(argv[iter],"-s") == 0) {
-					main_args.step = 1;
-					main_args.verbose = 1;
-					printf("Step Through Debugging Mode on\n");
+				main_args.step = 1;
+				main_args.verbose = 1;
+				printf("Step Through Debugging Mode on\n");
 			} else { 
 			if(strcmp(argv[iter],"-h") == 0) {
-					#ifdef EMULATE
-					printf("\nUsage: \"./emulate <filename> [-v|-s|-h]\"\n");
-					#endif
-					#ifdef ASSEMBLE
-					printf("\nUsage: \"./assemble <filename> [-v|-s|-h]\"\n");
-					#endif
-					printf("Argument \"-v\": Verbose Mode\n");
-					printf("Argument \"-s\": Step Through Mode\n");
-					printf("Argument \"-h\": Help\n");
-					exit(EXIT_SUCCESS);
+				#ifdef EMULATE
+				printf("\nUsage: \"./emulate <filename> [-v|-s|-h]\"\n");
+				#endif
+				#ifdef ASSEMBLE
+				printf("\nUsage: \"./assemble <input file> <output file> [-v|-s|-h]\"\n");
+				#endif
+				printf("Argument \"-v\": Verbose Mode\n");
+				printf("Argument \"-s\": Step Through Mode\n");
+				printf("Argument \"-h\": Help\n");
+				exit(EXIT_SUCCESS);
 			} else {
-                        if (iter == 1) 
-                                main_args.output_file = argv[2];
-                        else
- 				iter > 1 ? printf("ERROR: Unknown Argument: %s\n", argv[iter]) : 1;
+				iter > 1 ? printf("ERROR: Unknown Argument: %s\n", argv[iter]) : 1;
 			}
 			}
 			}

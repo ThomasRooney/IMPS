@@ -243,7 +243,7 @@ labelLL *preParse(lineLL * lineHEAD) {
 				sCur = lCur->symbolsHEAD;
 				if (sCur == sCurAddress) 
 				{
-					free(lCur->symbolsHEAD);
+					// free(lCur->symbolsHEAD); CAUSES ERROR (ONLY) ON CYGWIN - Memory leak minor so commenting
 					lCur->symbolsHEAD = sCur->next;
 				}
 				else {
@@ -352,9 +352,7 @@ int main(int argc, char **argv) {
 	labelLL *labels;
 	preAssemblyProgram preAssemblyHEAD;
 	preAssemblyProgram *preAssemblyCur = &preAssemblyHEAD;
-	
-	// Get arguments in terms of .s file (prob)
-	//parseArguments(argc, argv);
+	parseArguments(argc, argv);
 	if (readFile(main_args.file_name, inputLength, &inputBuffer)>EXIT_SUCCESS)
 		return FATAL_ERROR;
 	
@@ -364,6 +362,7 @@ int main(int argc, char **argv) {
 	tokenisedFile = tokAssemblerCode(*inputLength, inputBuffer);
 	// PreParser
 	labels = preParse(tokenisedFile);
+	
 	  
 	// Parsing Loop
 	for (lineCur = tokenisedFile;
@@ -379,8 +378,9 @@ int main(int argc, char **argv) {
 	}
 	// Assemble Program
 	assembled = assembleProgram(&preAssemblyHEAD);
+	
 	// Save the assembled program to the file specified
-	writeToBinary(assembled, argv[2]);
+	writeToBinary(assembled, main_args.output_file);
   // Move the parsed results to binary
   return EXIT_SUCCESS;
 }
