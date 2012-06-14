@@ -175,11 +175,12 @@ goal *emulation_loop(state *programState, goal *curGoal, goal *progScore) {
 				sizeof(binaryInstruction));
 
 		parsedInstruction = disassembleInstruction(binaryInstruction);
+		if (parsedInstruction.raw.opCode >= 19 || parsedInstruction.raw.opCode < 0 )
+			return NULL;
 		if (main_args.verbose == 1) {
 			printf("Current State..\n");
 			dump_state(programState);
 			dump_instruction(parsedInstruction);
-			 
 		}
 		opCodeFunction = (opCodeDictionary[parsedInstruction.raw.opCode]);
 		switch (opCodeFunction(&parsedInstruction, programState))
@@ -908,19 +909,19 @@ int main (int argc, char **argv) {
 	p.progLength = best.programLength;
 	
 	// Use best as breeding stock
-	
+	unsigned int i = 0;
 	// if we've done this maybe a few hundred times then give up:
-	for (iter = 0;iter <= 100; iter++)
+	for (iter = 0;iter <= 1; iter++)
 	{
 		// iterate function (defined as blocks of non-jumping  consequitive code) from best
 		while ( 1 )
 		{
 			// evolve p->prog randomly
-			printf("A");
 			enumerate_prog(&p);
 			virtualState = initialise_state(virtualState, p.prog, p.progLength);
- 			emulation_loop (virtualState, &(best.goal), score);
-			printf("Score: score->out = %s; score->time = %i", score->out, score->time);
+ 			if (emulation_loop (virtualState, &(best.goal), score) == NULL)
+				continue;
+			printf("out = %s; time = %i  %s", score->out, score->time,(!(i++ % 9) ?"\n":""));
 
 			// CASE:  IMPROVEMENT!
 			if (score != NULL && (strcmp(score->out, best.goal.out) == 0) && (score->time < best.goal.time)){
@@ -937,7 +938,6 @@ int main (int argc, char **argv) {
 				break;
 			}
 			else {
-				printf("B\n");
  			} 
 		}
 	}
