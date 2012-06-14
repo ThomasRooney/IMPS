@@ -2,7 +2,7 @@
 
 \begin{document}
 
-\title{Extending The IMPS Project with optimisation routines. }
+\title{Super optimisation algorithms}
 \author{TODO}
 
 \maketitle
@@ -12,6 +12,8 @@
 When we were asked to perform an unspecified extension of the assembler/emulator, one of my immediate thoughts was upon optimisation. Initially disregarding this as far too complicated, I happened upon a bit of creativity. One of the opensource projects that I follow is known as the openCog project - short for 'Open Cognition' and is a project with an ultimate aim to build an AGI. In the process of doing so over a long period of time, they have written or integrated some very effective pieces of A.I. code. 
 
 One of these is known as MOSES. This stands for Meta-Optimising Semantic Evolutionary Search, and it can generate simple algebraic programs based around either a scoring function or test data which the programs will have produce. It was originally written by Moshe Looks (http://metacog.org/doc.html), for his PHD thesis: "Competant Program Evolution". Whilst following some of the current work that was going on for the development of the program, I recognised that the algebraic output it produced was very similar to assembler code, and it would perhaps only be a simple map in between IMPS opcodes and MOSES's output. 
+
+The name chosen is superoptimisation, because, unlike standard optimisation, when a superoptimiser is run for an infinite length of time, the result is perfectly optimal code for the given problem, as full Levin search would be completed within the target searchspace of algorithm time completion.
 
 To explore this idea, I sent off an email to the google groups page where the current discussion on the openCog project goes on:
 
@@ -92,4 +94,14 @@ This was just a hobby project (the community of enthusiasts and collectors of th
 The result of this discussion is the attempt at optimisation code that I will be building over the next few days. This is in C++ as opposed to C, but in my mind that should be acceptable for the project, as it is a superset of C. This is mostly an experiment for me with using the openCog code in a practical application, and quite possibly will fail - in which case I'll probably attempt to blast out a more simple extension at the last minute.
 
 Eclipse CDT files are included in the repository due to the complexity of building the code, and the unlikelihood that the dependencies will be satisfied for building in the DOC build environment. The hope is to move these to CMAKE files when the project is finished.
+
+-----------------------------------------------------------
+
+Update: 6 hours on.. 10/06/12
+
+MOSES/Reduct was rather deeply integrated into the current opencog project, and I deemed it not worth the effort to try and extract the relevant details from the project, which doesn't fully compile under Cygwin anyway (which I am using). My options were to either use 'expect' and the provided Win32 Binaries to try and get something simple up and running, or try a more naiive Levin Search implementation instead of the A.I. based solution. I found research on superoptimisation for the Z80 processor (this was code written for a 'under 4k game' competition). The code is simple enough to be rewritten for use with the IMPS instruction set, so if worst comes to worst I actually have something to submit with regards to an extension.
+
+My aim now is to slowly integrate the functionality produced by Moshe Looks in MOSES into this superoptimsier to make it less and less naiive as I commit. First though, I need to get this naiive implementation up and running, which is still rather complex. 
+The first test for this is optimisation of the code produced by assembling simp_opt1.s - This performs the max of two numbers, and outputs the result.
+
 
