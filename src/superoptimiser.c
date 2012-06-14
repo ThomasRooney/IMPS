@@ -288,6 +288,8 @@ int measure (unsigned long long prog) {
 
 stack * breakOutFuncs(instruction * fst, int level)
 {
+	printf("Breaking out insn: ");
+	dump_instruction(*fst);
 	stack * col;
 	if (fst != NULL)
 	{	
@@ -302,6 +304,7 @@ stack * breakOutFuncs(instruction * fst, int level)
 			col->next = breakOutFuncs(fst, ++level);
 		}
 	}
+	printf("col Length = %i\n", col->progLength);
 	return col;
 }
 
@@ -884,13 +887,14 @@ int main (int argc, char **argv) {
 	for (iter = 0;iter <= 100; iter++)
 	{
 		// iterate function (defined as blocks of non-jumping  consequitive code) from best
+		
 		for (
-		p = breakOutFuncs((instruction *) best.program, 0);
-		p!=NULL;
-		p = breakOutFuncs((instruction *) best.program+(improv?p->progLength:0), 0))
+		p = best.program;
+		p!=NULL;)
 		{
 			// evolve p->prog randomly
 			enumerate_prog(&p);
+			printf("test\n");
 			virtualState = initialise_state(p->prog, p->progLength);
  			score = emulation_loop (virtualState, &(best.goal));
 			// CASE:  IMPROVEMENT!
@@ -899,10 +903,12 @@ int main (int argc, char **argv) {
 				best.program = p->prog;
 				best.programLength = p->progLength;
 				improv = 1;
-				printf("\n YEH!\n");
+				printf("\nImprovement Found");
+				printf("New time = %i", *score);
+				
 			}
 			else
-				printf(".");
+				printf("Failure");
 				improv = 0;
 		}
 	}
