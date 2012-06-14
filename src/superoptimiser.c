@@ -18,6 +18,7 @@
 #define END_ARG 255
 #define TRY_NUMBER 5
 #define RANDSAMP 16
+#define MAX_PROG_LENGTH 100
 #define MAX_OUTPUT 1000
 char progOut[MAX_OUTPUT];
 #include <stdio.h>
@@ -70,14 +71,14 @@ int measure_type=2;
 // For the goal to be changed, out must be equal, but time must be less.
 typedef struct { 
 	char * out;
-	int time;
+	unsigned long long time;
 }goal;
 
 // contains the best program found for the current output.
 typedef struct {
 	goal goal;
 	char * program;
-	int * programLength;
+	int programLength;
 }bestProgram;
 
 /**********************************************************
@@ -113,13 +114,22 @@ void dump_state(state *curState) {
  * heap and clearing all the registers and flags. The allocated 
  * memory is all initialised to 0.
  */
-state *initialise_state(const char * inputBuffer, const int inputLength) {
-	state * virtualState = malloc(sizeof(state));
+
+state *initialise_state(state * old, const char * inputBuffer, const int inputLength) {
+        state * virtualState;
+	if (old == NULL) {
+		virtualState = malloc(sizeof(state));
+		virtualState->MEMORY = calloc(MEMORY_SIZE, sizeof(char));
+	}
+	else {
+		virtualState = old;
+		memset(virtualState->MEMORY, 0, MEMORY_SIZE);
+	}
 	int i = 0;
 	char so[kDisplayWidth+1];
 	memset(virtualState->reg, 0, sizeof(virtualState->reg));
 	virtualState->programCounter = 0;
-	virtualState->MEMORY = calloc(MEMORY_SIZE, sizeof(char));
+
 	// allocate 65535 addresses with 32 bit boundary.	
 	memcpy((virtualState->MEMORY), inputBuffer, inputLength);
 	if (main_args.verbose) {
@@ -138,8 +148,7 @@ state *initialise_state(const char * inputBuffer, const int inputLength) {
  * callback, via a function pointer, to modify the state as in 
  * the specification for each opcode.
  */
-goal *emulation_loop(state *programState, goal *curGoal) {
-	goal *progScore = malloc(sizeof(goal));
+goal *emulation_loop(state *programState, goal *curGoal, goal *progScore) {
 	instruction parsedInstruction;
 	binaryInstruction binaryInstruction;
 	stateSignal (*opCodeFunction)(instruction *, state *);
@@ -147,9 +156,10 @@ goal *emulation_loop(state *programState, goal *curGoal) {
 	int iter;
 	// start timer
 	iter = 0;
+	memset(&progOut, 0, sizeof(progOut));
 	iTime = get_time(); 
 	progScore->time = (iTime - get_time());
-	while ( programState->programCounter >= 0)
+	while ( programState->programCounter >= 0 && programState->programCounter <= MAX_PROG_LENGTH)
 	{
 		iter++;
 		if (iter % 10 == 0)
@@ -157,10 +167,13 @@ goal *emulation_loop(state *programState, goal *curGoal) {
 			// add the difference between progScore->time and get_time
 			progScore->time = abs(iTime - get_time());
 			if (curGoal != NULL && curGoal->time < progScore->time)
+			{
 				return NULL; // We haven't met requirements
+			}
 		}
 		memcpy(&binaryInstruction, programState->MEMORY+programState->programCounter, 
 				sizeof(binaryInstruction));
+
 		parsedInstruction = disassembleInstruction(binaryInstruction);
 		if (main_args.verbose == 1) {
 			printf("Current State..\n");
@@ -179,6 +192,8 @@ goal *emulation_loop(state *programState, goal *curGoal) {
 			case STATE_INCREMENTPC:
 				programState->programCounter += PC_BOUNDARY;
 				break;
+			default:
+				return NULL;
 		}
 		if (main_args.step) 
 			waitUntilEnter();
@@ -187,8 +202,7 @@ goal *emulation_loop(state *programState, goal *curGoal) {
 	// if we lasted up till now, we're better than the best goal so far
 	// return our score to update the bestProgram
 	progScore->time = abs(iTime - get_time());
-	progScore->out = malloc(sizeof(progOut));
-	strcpy(progScore->out, progOut);
+	memcpy(progScore->out, progOut, sizeof(progOut));
 	return progScore;
 }
 
@@ -799,7 +813,7 @@ unsigned int randRegister() {
 	return rand() % 32;
 }
 
-instruction rand_valid_instruct(void)
+instruction rand_valid_instruct(stack * p)
 {
 	instruction out;
 	memset(&out, 0, sizeof(out));
@@ -821,13 +835,14 @@ instruction rand_valid_instruct(void)
 			out.iType.immediateValue = rand();
 			return out;
 		case INSTRUCTION_TYPE_J:
-			out.jType.address = rand() % 32768;
+			out.jType.address = rand() % p->progLength;
 			return out;
 	}
 }
 
 void enumerate_prog(stack * p)
 {
+	srand ( time(NULL) ); // Initialise Random
 	int i;
 	int r;
 	instruction randInstruction;
@@ -836,21 +851,23 @@ void enumerate_prog(stack * p)
 	
 	for (i = 0; i < r; i++)
 	{
-		randInstruction = rand_valid_instruct();
-		memcpy(p->prog, &randInstruction, sizeof(instruction));
+		randInstruction = rand_valid_instruct(p);
+		memcpy(p->prog+rand()%p->progLength - 1, &randInstruction, sizeof(instruction));
 	}
 }
 
 
 int main (int argc, char **argv) {
-	stack *p;
+
+	stack p;
 	char * inputBuffer;
 	int improv = 0;
+	int failures = 0;
 	int  * inputLength = malloc(sizeof(int)); // Kept on heap due to non-local use
 	int iter;
 	unsigned long long t1, t2;
 	// This is where the opcodeOUT output gets channelled
-	memset(&progOut, 0, sizeof(progOut));
+	memset(&progOut, 0, sizeof(MAX_OUTPUT));
 	// TEMP: test tick function
 	t1 = get_time();
 	t2 = get_time();
@@ -859,6 +876,10 @@ int main (int argc, char **argv) {
 	parseArguments(argc, argv);
 	goal *score;
 	bestProgram best;
+	// Set up heap for scoring
+	score = malloc(sizeof(goal));
+	score->out = malloc(sizeof(progOut));
+	best.goal.out = malloc(sizeof(progOut));
 
 	if (readFile(main_args.file_name, inputLength, &inputBuffer)>EXIT_SUCCESS) {
 		return FATAL_ERROR;
@@ -867,8 +888,8 @@ int main (int argc, char **argv) {
 		printf("File Read Success. Length is %i bits\n", (*inputLength)*32);
 		
 	// This virtualState, when run by emulation_loop, gives us our      scoring function, alongside time taken
-	state *virtualState = initialise_state(inputBuffer, *inputLength);
-	score = emulation_loop(virtualState, NULL);
+	state *virtualState = initialise_state(NULL, inputBuffer, *inputLength);
+	emulation_loop(virtualState, NULL, score);
 		printf("scoring function: \n");
 		printf("goal(time) = %i\n", score->time);
 		printf("goal(out) = %s\n", score->out);
@@ -877,9 +898,14 @@ int main (int argc, char **argv) {
 		printf("Scoring Function Flawed\n");
 	}
 	
-	best.goal = *score;
+	best.goal.time = score->time;
+	memcpy(best.goal.out, score->out, sizeof(progOut));
 	best.program = inputBuffer;
-	best.programLength = inputLength;
+	best.programLength = *inputLength;
+
+	p.prog = malloc(best.programLength);
+	memcpy(p.prog, best.program, best.programLength);
+	p.progLength = best.programLength;
 	
 	// Use best as breeding stock
 	
@@ -887,35 +913,38 @@ int main (int argc, char **argv) {
 	for (iter = 0;iter <= 100; iter++)
 	{
 		// iterate function (defined as blocks of non-jumping  consequitive code) from best
-		
-		for (
-		p = best.program;
-		p!=NULL;)
+		while ( 1 )
 		{
 			// evolve p->prog randomly
+			printf("A");
 			enumerate_prog(&p);
-			printf("test\n");
-			virtualState = initialise_state(p->prog, p->progLength);
- 			score = emulation_loop (virtualState, &(best.goal));
+			virtualState = initialise_state(virtualState, p.prog, p.progLength);
+ 			emulation_loop (virtualState, &(best.goal), score);
+			printf("Score: score->out = %s; score->time = %i", score->out, score->time);
+
 			// CASE:  IMPROVEMENT!
-			if (score != NULL && (memcmp(score, &best.goal, sizeof(goal)) != 0)){
-				best.goal = *score;
-				best.program = p->prog;
-				best.programLength = p->progLength;
+			if (score != NULL && (strcmp(score->out, best.goal.out) == 0) && (score->time < best.goal.time)){
+				printf("C");
+				best.goal.time = score->time;
+				memcpy(best.goal.out, score->out, sizeof(progOut));
+				best.program = p.prog;
+				best.programLength = p.progLength;
 				improv = 1;
-				printf("\nImprovement Found");
-				printf("New time = %i", *score);
-				
+				printf("\nImprovement Found\n");
+				printf("    New time = %i", score->time);
+				printf("    New Out = %s", score->out);
+				failures = 0;
+				break;
 			}
-			else
-				printf("Failure");
-				improv = 0;
+			else {
+				printf("B\n");
+ 			} 
 		}
 	}
 	
-	free(inputLength);
-	free(virtualState);
-	free(inputBuffer);
+//	free(inputLength);
+//	free(virtualState);
+//	free(inputBuffer);
     return EXIT_SUCCESS;
 
 }
