@@ -1,8 +1,10 @@
+#define ASSEMBLE
+
 #include <stdlib.h>
 #include <string.h>
 #include "assemble.h"
 
-#define ASSEMBLE
+
 
 #define MAX_INT 32767
 
@@ -243,7 +245,7 @@ labelLL *preParse(lineLL * lineHEAD) {
 				sCur = lCur->symbolsHEAD;
 				if (sCur == sCurAddress) 
 				{
-					free(lCur->symbolsHEAD);
+					// free(lCur->symbolsHEAD); CAUSES ERROR (ONLY) ON CYGWIN - Memory leak minor so commenting
 					lCur->symbolsHEAD = sCur->next;
 				}
 				else {
@@ -317,15 +319,19 @@ assembledProgram assembleProgram(preAssemblyProgram * preAssemblyHead) {
 
 //Should write the converted assembly to a file, gets passed poitner to beginning of converted code 
 //and also the size of each memory block.
-void writeToBinary (assembledProgram assembledProgram) {
-    char *fileName;
- 
-	// will take file and change from .s to .bin
-	fileName = strtok2 (main_args.file_name,".s");
-        fileName = strcat(fileName, ".bin");
-	FILE *binFile = fopen(fileName, "wb+");
+void writeToBinary (assembledProgram assembledProgram, char *outputFile) {
+
+
+	
+// will take file and change from .s to .bin
+//	fileName = strtok2 (main_args.file_name,".s");
+//       fileName = strcat(fileName, ".bin");
+
+
+//will take the given output file and write to it.
+	FILE *binFile = fopen(outputFile, "wb+");
  	if (binFile == NULL) {
-  		printf("File: %s cannot be created", fileName);
+  		printf("File: %s cannot be created", outputFile);
   		exit(EXIT_FAILURE);
 	}
         
@@ -348,8 +354,6 @@ int main(int argc, char **argv) {
 	labelLL *labels;
 	preAssemblyProgram preAssemblyHEAD;
 	preAssemblyProgram *preAssemblyCur = &preAssemblyHEAD;
-	
-	// Get arguments in terms of .s file (prob)
 	parseArguments(argc, argv);
 	if (readFile(main_args.file_name, inputLength, &inputBuffer)>EXIT_SUCCESS)
 		return FATAL_ERROR;
@@ -360,6 +364,7 @@ int main(int argc, char **argv) {
 	tokenisedFile = tokAssemblerCode(*inputLength, inputBuffer);
 	// PreParser
 	labels = preParse(tokenisedFile);
+	
 	  
 	// Parsing Loop
 	for (lineCur = tokenisedFile;
@@ -375,8 +380,9 @@ int main(int argc, char **argv) {
 	}
 	// Assemble Program
 	assembled = assembleProgram(&preAssemblyHEAD);
+	
 	// Save the assembled program to the file specified
-	writeToBinary(assembled);
+	writeToBinary(assembled, main_args.output_file);
   // Move the parsed results to binary
   return EXIT_SUCCESS;
 }
