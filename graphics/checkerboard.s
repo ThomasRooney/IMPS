@@ -87,7 +87,7 @@ for_row_pix:      ble  $13 $6  colour_change
                   jmp  for_row_pix            - loop row_pix
 
 
-change_colour:    beq  $7  $0  b_to_w         - changes the colour
+change_colour:    beq  $7  $0  b_to_w          - changes the colour
                   beq  $7  $19 w_to_b
 
 end_row_pix:      addi $12 $12 1              - row++
