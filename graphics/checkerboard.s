@@ -8,7 +8,7 @@ pixel:            .fill 8
 
 char_P:           .fill 80
 char_6:           .fill 54
-char_4:	          .fill 52
+char_4:           .fill 52
 char_space:       .fill 20
 max_colour:       .fill 255
 
@@ -42,7 +42,7 @@ w_to_b:
                   jmp end_row_pix                     
 
 
-start: 	          lw  $1  $0  white           - white is the first colour
+start:            lw  $1  $0  white           - white is the first colour
                   lw  $4  $0  width           - register 4 = width
                   lw  $5  $0  height          - register 5 = height
                   lw  $6  $0  pixel           - register 6 = pixel size
@@ -78,7 +78,7 @@ print_pixel:      out $7
                   out $9
                   jr $31                      - back to rowpix
 
-for_col: 	  ble  $10 $4  end            - branches and for loops
+for_col:          ble  $10 $4  end            - branches and for loops
 for_col_pix:      ble  $11 $6  colour_change  - branch if end of pixel
 for_row:          ble  $12 $5  end_row		
 for_row_pix:      ble  $13 $6  colour_change
@@ -87,7 +87,7 @@ for_row_pix:      ble  $13 $6  colour_change
                   jmp  for_row_pix            - loop row_pix
 
 
-change_colour:    beq  $7  $0  b_to_w          - changes the colour
+change_colour:    beq  $7  $0  b_to_w         - changes the colour
                   beq  $7  $19 w_to_b
 
 end_row_pix:      addi $12 $12 1              - row++
