@@ -158,6 +158,7 @@ typedef struct {
 }state;
  
  typedef enum stateSignal{ 
+	STATE_ERROR = -1, 
 	STATE_INCREMENTPC = 1,
 	STATE_HALT = 2,
 	STATE_CONTINUE = 3

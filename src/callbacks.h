@@ -50,14 +50,25 @@ int doOpCode_MULI(instruction * args, state * state) {
 }
 
 int doOpCode_LW  (instruction * args, state * state) {
-  state->reg[args->iType.R1] =
-  state->MEMORY[state->reg[args->iType.R2] + args->iType.immediateValue];
+  // As below
+  unsigned calc = state->reg[args->iType.R2] + args->iType.immediateValue;
+  if (calc > MEMORY_SIZE || calc < 0)
+    return STATE_ERROR;
+  else { 
+    state->reg[args->iType.R1] = state->MEMORY[calc];
+  }
   return STATE_INCREMENTPC;
 }
 
 int doOpCode_SW  (instruction * args, state * state) {
-  state->MEMORY[state->reg[args->iType.R2] + args->iType.immediateValue] =
-  state->reg[args->iType.R1];
+  // To make this bulletproof, we need to make sure that the memory accessed exists. 
+  // If not, we're returning a STATE_ERROR
+  unsigned calc =  state->reg[args->iType.R2] + args->iType.immediateValue;
+  if (calc > MEMORY_SIZE || calc < 0)
+    return STATE_ERROR;
+  else {
+    state->MEMORY[calc] = state->reg[args->iType.R1];
+  }
   return STATE_INCREMENTPC;
 }
 

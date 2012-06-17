@@ -866,6 +866,7 @@ int main (int argc, char **argv) {
 	int failures = 0;
 	int  * inputLength = malloc(sizeof(int)); // Kept on heap due to non-local use
 	int iter;
+	int i2;
 	unsigned long long t1, t2;
 	// This is where the opcodeOUT output gets channelled
 	memset(&progOut, 0, sizeof(MAX_OUTPUT));
@@ -892,7 +893,7 @@ int main (int argc, char **argv) {
 	state *virtualState = initialise_state(NULL, inputBuffer, *inputLength);
 	emulation_loop(virtualState, NULL, score);
 		printf("scoring function: \n");
-		printf("goal(time) = %i\n", score->time);
+		printf("goal(time) = %u\n", score->time);
 		printf("goal(out) = %s\n", score->out);
 	if (score == NULL)
 	{
@@ -934,6 +935,11 @@ int main (int argc, char **argv) {
 				printf("\nImprovement Found\n");
 				printf("    New time = %i", score->time);
 				printf("    New Out = %s", score->out);
+				printf("\n New Program: \n");
+				for (i2 = 0; i2 < p.progLength; i2++)
+				{
+					dump_instruction(*(instruction *)(best.program+i2*4));
+				}
 				failures = 0;
 				break;
 			}
