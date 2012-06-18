@@ -80,10 +80,10 @@ Linas Vepstas linasvepstas@gmail.com
 \\
 \\\indent This is a very naive implementation, though plans were drawn for several much faster ways of doing this. The favoured one was to find a 'Normal Form' upon which assembly programs could be elegantly placed into. Once this form was found, it would be possible to prove equivilence of different snippets of code very quickly. These would be entered into a (very large) database, meaning large amounts of code could be quickly optimised in parallel with the search process.
 \\
-\\\indent Unfortately, the main problem found was discovering this 'normal form' by which assembler could be placed into. The simpler solution of running code in a sandbox whilst checking states before and after was much easier to implement.
-
 \\
-\\\indent Towards the end of the project, we did manage to get successful results with our program - even if the program to be optimised was fudged somewhat. The program simp_opt2.s was produced, which has a useless loop, iterating to 1000. The hope was we could easily find a program which has NOP'd this loop or modified it in someway to speed it up - and success was found. The first solution to this that the program found was to replace the '+ 1' part of the loop with an arbitrarily large number '~16000'. Subsequently evolving the program later found that it could simply JMP over the loop (to the section which prints 'Hey'). 
+\indent Unfortately, the main problem found was discovering this 'normal form' by which assembler could be placed into. The simpler solution of running code in a sandbox whilst checking states before and after was much easier to implement.
+\\
+\indent Towards the end of the project, we did manage to get successful results with our program - even if the program to be optimised was fudged somewhat. The program simp_opt2.s was produced, which has a useless loop, iterating to 1000. The hope was we could easily find a program which has NOP'd this loop or modified it in someway to speed it up - and success was found. The first solution to this that the program found was to replace the '+ 1' part of the loop with an arbitrarily large number '~16000'. Subsequently evolving the program later found that it could simply JMP over the loop (to the section which prints 'Hey'). 
 
 \section{Design and Implementation}
 \indent Though the initial “dream” extension of the superoptimiser was created; for now, we take a much simpler approach to the problem. Given the limited instruction set, we intend now to simply take in a sample assembly program, in this case it is one that simply computes the max of two given integers. From here, we decided that it would be best to simply go over the code and then randomly select lines to replace. We understood that this takes both a considerable amount of time and also is basically brute forcing optimisation which may take many, many tries. We did discuss other solutions, one would be that we could use the algorithm to store known simplifications of code. This would require use of a database, however, as we only have so many registers to utilise in this project. 
@@ -110,6 +110,7 @@ MORE OF THE PROBLEMS
 \section{Reflection upon the project}
 \underline{Thomas' reflections}
 \\
+\indent This project was the most interesting and fun for me of the year - it allowed me to use C, one of my favourite languages due to the ease of understanding program 
 
 \noindent\underline{Terence's reflections}
 \\ 
