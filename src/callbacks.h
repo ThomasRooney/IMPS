@@ -2,6 +2,42 @@
 #include "common.h"
 #endif
 
+#ifdef superoptimiser
+int memoryActiveLoc[MEMORY_SIZE];
+void addMemoryActiveLoc(unsigned int memLoc)
+{
+	int i;
+	for (i = 0;memoryActiveLoc[i] != -1; i++)
+	{
+		if (memoryActiveLoc[i] == memLoc)
+		{
+			return;
+		}
+	}
+	memoryActiveLoc[i] = memLoc;
+}
+int getSizeMemLoc(){
+	int i;
+	for (i=0;memoryActiveLoc[i]!=-1;i++);
+	return i;
+}
+short getRandMemoryLoc(char opCode)
+{
+	int newI;
+	int size = getSizeMemLoc();
+	
+	if (opCode == 7) // return an active Loc
+		return memoryActiveLoc[rand() % (size + 1)];
+	else
+	{
+		newI = rand() % MEMORY_SIZE;
+		memoryActiveLoc[size] = newI;
+		return newI;
+	}
+}
+#endif
+
+
 /**************************************************************************
 * Callback functions for opcode operations
 */
@@ -56,6 +92,9 @@ int doOpCode_LW  (instruction * args, state * state) {
   if (calc > MEMORY_SIZE || calc < 0)
     return STATE_ERROR;
   else { 
+#ifdef superoptimiser
+	addMemoryActiveLoc(calc);
+#endif
     memcpy(&state->reg[args->iType.R1], &state->MEMORY[calc], sizeof(instruction));
   }
 

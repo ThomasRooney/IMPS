@@ -20,16 +20,17 @@
 #define RANDSAMP 16
 #define MAX_PROG_LENGTH 100
 #define MAX_OUTPUT 1000
-char progOut[MAX_OUTPUT];
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <malloc.h>
 #include <time.h>
-
+char progOut[MAX_OUTPUT];
 
 #include "common.h"
 #include "callbacks.h"
+int bestMemoryActiveLoc[MEMORY_SIZE]; // don't read outside this
+
 // #ifdef WIN32
 
 // #include <windows.h>
@@ -264,13 +265,35 @@ instruction rand_valid_instruct(stack * p)
 		case INSTRUCTION_TYPE_I:
 			out.iType.R1 = randRegister();
 			out.iType.R2 = randRegister();
-			out.iType.immediateValue = rand();
+			out.iType.immediateValue = getRandMemoryLoc(out.raw.opCode);
 			return out;
 		case INSTRUCTION_TYPE_J:
 			out.jType.address = rand() % p->progLength;
 			return out;
 	}
 	return out;
+}
+
+void random_evolve_prog(stack * p)
+{
+	srand ( time(NULL) ); // Initialise Random
+	int i;
+	int r;
+	instruction randInstruction;
+	// rand = how many instructions to modify.
+	r = (rand() + 1) % p->progLength;
+	
+	for (i = 0; i < r; i++)
+	{
+		randInstruction = rand_valid_instruct(p);
+		memcpy(p->prog+rand()%p->progLength - 1, &randInstruction, sizeof(instruction));
+	}
+}
+
+instruction next_instruction(stack *p, long long nextHash)
+{
+	// nextHash % p->progLength = curInstruction
+	// nextHash / p->progLength %  = curArgument
 }
 
 void enumerate_prog(stack * p)
@@ -284,7 +307,7 @@ void enumerate_prog(stack * p)
 	
 	for (i = 0; i < r; i++)
 	{
-		randInstruction = rand_valid_instruct(p);
+		randInstruction = next_instruction(p, 0);
 		memcpy(p->prog+rand()%p->progLength - 1, &randInstruction, sizeof(instruction));
 	}
 }
@@ -314,8 +337,10 @@ int main (int argc, char **argv) {
 	score = malloc(sizeof(goal));
 	score->out = malloc(sizeof(progOut));
 	best.goal.out = malloc(sizeof(progOut));
+	// Set up active memory locations for callbacks.
+	memset(&memoryActiveLoc, -1, MEMORY_SIZE);
 
-	if (readFile(main_args.file_name, inputLength, &inputBuffer)>EXIT_SUCCESS) {
+	if (readFile(main_args.file_name, inputLength, &inputBuffer)>EXIT_SUCCESS) {	
 		return FATAL_ERROR;
 	}
 	if (main_args.verbose)
@@ -350,13 +375,13 @@ int main (int argc, char **argv) {
 		while ( 1 )
 		{
 			// evolve p->prog randomly
-			enumerate_prog(&p);
+			random_evolve_prog(&p);
 			virtualState = initialise_state(virtualState, (char *)p.prog, p.progLength);
  			if (emulation_loop (virtualState, &(best.goal), score) == NULL)
 				continue;
 			printf("out = %s; time = %llu  %s", score->out, score->time,(!(i++ % 9) ?"\n":""));
 
-			// CASE:  IMPROVEMENT!
+			// CASE:  True IMPROVEMENT!
 			if (score != NULL && (strcmp(score->out, best.goal.out) == 0) && (score->time < best.goal.time)){
 				printf("C");
 				best.goal.time = score->time;
