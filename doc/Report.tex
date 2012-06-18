@@ -7,10 +7,10 @@
 \maketitle
 
 \section{Introduction and Background}
-\indent When we were asked to perform an unspecified extension of the assembler/emulator, one of Toms' immediate thoughts was program optimisation. Initially disregarding this as far too complicated, Tom happened upon a bit of creativity. One of the opensource projects that he follows is known as the openCog project - short for 'Open Cognition' and is a project with an ultimate aim to build an AGI(Artificial General Intelligence). In the process of doing so over a long period of time, they have written or integrated some very effective pieces of A.I. code. 
+\indent When we were asked to perform an unspecified extension of the assembler/emulator, one of Tom's immediate thoughts was program optimisation. Initially disregarding this as far too complicated, Tom happened upon a bit of creativity. One of the opensource projects that he follows is known as the openCog project - short for 'Open Cognition' and is a project with an ultimate aim to build an AGI(Artificial General Intelligence). In the process of doing so over a long period of time, they have written and integrated some very effective pieces of A.I. code. 
 One of these is known as MOSES. This stands for Meta-Optimising Semantic Evolutionary Search, and it can generate simple algebraic programs based around either a scoring function or test data which the programs will have produce. It was originally written by Moshe Looks (http://metacog.org/doc.html), for his PHD thesis: "Competent Program Evolution". Whilst following some of the current work going on for the development of the program, Tom recognised that the algebraic output it produced was very similar to assembler code, and it would perhaps only be a simple map between IMPS opcodes and MOSES's output. 
 \\
-\indent The project name Tom chose was superoptimisation. Unlike standard optimisation, when a superoptimiser is run for an infinite length of time, uperoptimisation's result is a piece of perfectly optimal code for the given problem as a full Levin search would be completed within the target search space of algorithm time completion.
+\indent The project name Tom chose was superoptimisation. Unlike standard optimisation, when a superoptimiser is run for an infinite length of time, superoptimisation's result is, in theory, the fastest piece of code for a general problem.
 \\
 \indent To explore this idea, Tom sent off an email to the google groups page where the current discussion on the openCog project goes starts as below and still goes on:
 \\
@@ -61,30 +61,40 @@ Murilo Saraiva de Queiroz muriloq@gmail.com
 Linas Vepstas linasvepstas@gmail.com
 \\Not to give away secrets to nvidia, but: it's actually now feasible to do with 32 and 64 bit processors; the trick is to search for inputs where insn sequences are unequal; and modern-day ASP and SMT solvers are quite capable of this, being based on the modern SAT solver techniques.
 \\
+\\\hrulefill
+
+
+
+\indent MOSES/Reduct was rather deeply integrated into the current opencog project, and Tom deemed it not worth the effort to try and extract the relevant details from the project, which doesn't fully compile under Cygwin anyway (which Tom is using). The options were to either use 'expect' and the provided Win32 Binaries to try and get something simple up and running, or try a more naive Levin Search implementation instead of the A.I. based solution. 
 \\
-\\Murilo Saraiva de Queiroz muriloq@gmail.com
-\\This was just a hobby project (the community of enthusiasts and collectors of the MSX, an old 8-bit microcomputer platform popular in Brazil, Japan and Europe in the 1980s, is quite active so there are a lot of interesting projects based on it - the simplicity creates interesting constraints for this kind of stuff)
-\\
-The result of this discussion is the attempt at optimisation code that I will be building over the next few days. This is in C++ as opposed to C, but in my mind that should be acceptable for the project, as it is a superset of C. This is mostly an experiment for me with using the openCog code in a practical application, and quite possibly will fail - in which case I'll probably attempt to blast out a more simple extension at the last minute.
-\\Eclipse CDT files are included in the repository due to the complexity of building the code, and the unlikelihood that the dependencies will be satisfied for building in the DOC build environment. The hope is to move these to CMAKE files when the project is finished.
-\\
-MOSES/Reduct was rather deeply integrated into the current opencog project, and Tom deemed it not worth the effort to try and extract the relevant details from the project, which doesn't fully compile under Cygwin anyway (which Tom is using). My options were to either use 'expect' and the provided Win32 Binaries to try and get something simple up and running, or try a more naive Levin Search implementation instead of the A.I. based solution. Tom found research on superoptimisation for the Z80 processor (this was code written for a 'under 4k game' competition). The code is simple enough to be rewritten for use with the IMPS instruction set, so if worst comes to worst our group will have something to submit with regards to an extension.
-\\The aim now is to slowly integrate the functionality produced by Moshe Looks in MOSES into this superoptimiser to make it less and less naïve. However, we first need to get this naive implementation up and running, which is still rather complex, and so, this leads us onto our project extension.
+\indent Research referenced in the email conversation on program optimisation for the Z80 processor showed that a naive implementation was possible, as it has been successfully used to reduce code used in a 'under-4k' game competetion. Using this as inspiration, a wrapper around the emulation program was written, that operates a naive genetic algorithm to try and optimise a compiled program by randomly changing and removing code from the 'scoring function' defined as the original, working code.
+
+
+
+
 
 \section{Project description}
-\indent Superoptimising code is the intention of this project extension. Through discussion we hoped that such a program able to carry out superoptimisation would be able to, if given an empty file and a desired goal output, be able to create fully functioning assembly code to produce this output with the limited instruction set given to us. After further discussion, Tom decided he would continue the project after its due date to see if he can get superoptimisation to work with Intel Assembler (computing within a reasonable time frame of course). 
+\indent Superoptimising code is the intention of this project extension. Through discussion we hoped that such a program able to carry out superoptimisation would be able to, if given an empty file and a desired goal output, be able to create fully functioning assembly code to produce this output with the limited instruction set given to us. After further discussion, Tom decided he would continue the project after its due date to see if he can build a decent superoptimisation solution to work with Intel Assembler (computing within a reasonable time frame of course). 
 \\
-\indent The project now takes a file of assembly code for a program. It then runs over the code and at random, for reasons explained later, will choose “n” lines to replace with “n” new opcodes and suitable operands. The program shall then run this new code and collect off its execution to time it takes to complete and also the output of the program.
+\indent The project takes a file of compiled code for input. It then runs over the code and calculates a score. It then enters a genetic algorithm, which searches for the original score as a target (time and output) whilst executing a random mutation of the best program found. Once an improvement is found, this programs is now the new target, and the new program is the one mutated. 
 \\
-\indent Afterwards, the program compares the output of the new code to the output that was from the original code. If this is the same it will move onto compare the execution times of each of the programs else it will simply discard the newly created program and move on to the next permutation. When comparing the times, if the new program's time is better, that is less than the current programs time then we shall output the new program code to stdout. Any slower than the original then we just ignore it. This means we keep checking over the permutations of the original assembly code until we reach an improvement which is where the superoptimiser program shall terminate.
+\\\indent This is a very naive implementation, though plans were drawn for several much faster ways of doing this. The favoured one was to find a 'Normal Form' upon which assembly programs could be elegantly placed into. Once this form was found, it would be possible to prove equivilence of different snippets of code very quickly. These would be entered into a (very large) database, meaning large amounts of code could be quickly optimised in parallel with the search process.
+\\
+\\\indent Unfortately, the main problem found was discovering this 'normal form' by which assembler could be placed into. The simpler solution of running code in a sandbox whilst checking states before and after was much easier to implement.
+
+\\
+\\\indent Towards the end of the project, we did manage to get successful results with our program - even if the program to be optimised was fudged somewhat. The program simp_opt2.s was produced, which has a useless loop, iterating to 1000. The hope was we could easily find a program which has NOP'd this loop or modified it in someway to speed it up - and success was found. The first solution to this that the program found was to replace the '+ 1' part of the loop with an arbitrarily large number '~16000'. Subsequently evolving the program later found that it could simply JMP over the loop (to the section which prints 'Hey'). 
+
+\section{Design and Implementation}
+\indent Though the initial “dream” extension of the superoptimiser was created; for now, we take a much simpler approach to the problem. Given the limited instruction set, we intend now to simply take in a sample assembly program, in this case it is one that simply computes the max of two given integers. From here, we decided that it would be best to simply go over the code and then randomly select lines to replace. We understood that this takes both a considerable amount of time and also is basically brute forcing optimisation which may take many, many tries. We did discuss other solutions, one would be that we could use the algorithm to store known simplifications of code. This would require use of a database, however, as we only have so many registers to utilise in this project. 
+\\
+\indent The program that we produced works with the arguments:
+\\ ./superoptimiser <input file> <-s|-v|-h>
+\\ This input file is 
 \\
 \indent However, before full termination, the program checks the new assembly code 100 times to gather a suitable amount of data to produce a trustworthy average of time to execute. The next step then follows on whether the average is better or worse than the original assembly code.
 Some other examples of use could include:
 
-MORE EXAMPLESSSSSSSSSSSSSSSSs
-
-\section{Design and Implementation}
-\indent Though the initial “dream” extension of the superoptimiser was created; for now, we take a much simpler approach to the problem. Given the limited instruction set, we intend now to simply take in a sample assembly program, in this case it is one that simply computes the max of two given integers. From here, we decided that it would be best to simply go over the code and then randomly select lines to replace. We understood that this takes both a considerable amount of time and also is basically brute forcing optimisation which may take many, many tries. We did discuss other solutions, one would be that we could use the algorithm to store known simplifications of code. This would require use of a database, however, as we only have so many registers to utilise in this project. 
 \\
 \indent There were also many other situations that we had thought of having a go at, but none really managing to come to fruition. For example, we did consider the fact that replacing  a line with several new lines could actually result in an improvement in time in some situations. There was also the fact that a change in a program such as our sample “Max” could simply be replaced with one out opcode and the register which conveniently holds the same answer as the original assembly program's output. These are all flaws within the current superoptimiser that we have. However, upon consultation amongst us both we realised that if we were even able to implement these cases, it would take an extremely long time to compute.
 \\
