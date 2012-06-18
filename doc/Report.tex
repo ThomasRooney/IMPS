@@ -2,139 +2,117 @@
 
 \begin{document}
 
-\title{Super optimisation algorithms}
-\author{Thomas Rooney, Terence Tse}
-
+\title{Super Optimisation of Programs}
+\author{Thomas Rooney, Terence Tse : Group g1112069}
 \maketitle
 
-\section{Introduction}
-
-When we were asked to perform an unspecified extension of the assembler/emulator, one of my immediate thoughts was upon optimisation. Initially disregarding this as far too complicated, I happened upon a bit of creativity. One of the opensource projects that I follow is known as the openCog project - short for 'Open Cognition' and is a project with an ultimate aim to build an AGI. In the process of doing so over a long period of time, they have written or integrated some very effective pieces of A.I. code. 
-
-One of these is known as MOSES. This stands for Meta-Optimising Semantic Evolutionary Search, and it can generate simple algebraic programs based around either a scoring function or test data which the programs will have produce. It was originally written by Moshe Looks (http://metacog.org/doc.html), for his PHD thesis: "Competant Program Evolution". Whilst following some of the current work that was going on for the development of the program, I recognised that the algebraic output it produced was very similar to assembler code, and it would perhaps only be a simple map in between IMPS opcodes and MOSES's output. 
-
-The name chosen is superoptimisation, because, unlike standard optimisation, when a superoptimiser is run for an infinite length of time, the result is perfectly optimal code for the given problem, as full Levin search would be completed within the target searchspace of algorithm time completion.
-
-To explore this idea, I sent off an email to the google groups page where the current discussion on the openCog project goes on:
-
-------------------------------------------------------------
-[opencog] Use of MOSES to optimize Assembly Code
-
-Thomas Rooney
--Jun 1 (9 days ago)
-------------------------------------------------------------
-to opencog 
+\section{Introduction and Background}
+\indent When we were asked to perform an unspecified extension of the assembler/emulator, one of Toms' immediate thoughts was program optimisation. Initially disregarding this as far too complicated, Tom happened upon a bit of creativity. One of the opensource projects that he follows is known as the openCog project - short for 'Open Cognition' and is a project with an ultimate aim to build an AGI(Artificial General Intelligence). In the process of doing so over a long period of time, they have written or integrated some very effective pieces of A.I. code. 
+One of these is known as MOSES. This stands for Meta-Optimising Semantic Evolutionary Search, and it can generate simple algebraic programs based around either a scoring function or test data which the programs will have produce. It was originally written by Moshe Looks (http://metacog.org/doc.html), for his PHD thesis: "Competent Program Evolution". Whilst following some of the current work going on for the development of the program, Tom recognised that the algebraic output it produced was very similar to assembler code, and it would perhaps only be a simple map between IMPS opcodes and MOSES's output. 
+\\
+\indent The project name Tom chose was superoptimisation. Unlike standard optimisation, when a superoptimiser is run for an infinite length of time, uperoptimisation's result is a piece of perfectly optimal code for the given problem as a full Levin search would be completed within the target search space of algorithm time completion.
+\\
+\indent To explore this idea, Tom sent off an email to the google groups page where the current discussion on the openCog project goes starts as below and still goes on:
+\\
+\\
+Use of MOSES to optimize Assembly Code
+\\
 Hi All,
-
+\\
 I'm a student at Imperial College London, and I've been following
 openCog for a while now, finding it an absolutely fascinating trove of A.I. techniques towards solving the AGI problem. One of the projects that particularly interests me is MOSES, and an idea which struck me recently is its use in optimization, specifically assembler code. 
+\\
 I am writing an assembler for a reduced instruction set as part of my university course, and have been looking at extensions that could be made upon it. I've attempted to go through the Moshe Looks's founding thesis "Competent Program Evolution", and I have found it to be beyond my current understanding, and as such cannot really make an accurate guess on how feasible the idea is. I am currently thinking of simply hooking 'expect' into its compiled binaries and mapping the assembler instruction tree I have into the format required by MOSES, to perform a proof of concept of the idea, as opposed to trying to work with atomspace and integrating MOSES source directly.
-
+\\
 It would be great if I could get some informed opinions on the feasibility of the idea, from those currently working with it.
-
+\\
 Kind Regards,
-
+\\
 Thomas Rooney
-------------------------------------------------------------
+\\
+\\
 Ben Goertzel ben@goertzel.org via googlegroups.com 
-Jun 9 (1 day ago)
-
-to opencog 
-This does seem possible, but would be more work than you're thinking...
-
-The Atomspace would not need to be involved, but you'd need to create
+\\This does seem possible, but would be more work than you're thinking...
+\\The Atomspace would not need to be involved, but you'd need to create
 primitive MOSES operations corresponding to the assembly language
 operators, and then create Reduct rules embodying the algebraic
 properties of these operators...
-
-Then Reduct could put assembler programs in hierarchical normal form,
+\\Then Reduct could put assembler programs in hierarchical normal form,
 and you could use MOSES to search for programs equivalent to, but
 faster than, the program you started with...
-
--- Ben
------------------------------------------------------------
+\\-- Ben
+\\
+\\
 Linas Vepstas linasvepstas@gmail.com
-Jun 9 (1 day ago)
-
-to opencog, me
-The current technique that is gaining academic interest is called "superoptimization".    This is done by building a database of millions of short instruction sequences; whenever the compiler emits one, you look it up, and see if there is an equivalent but shorter one.  The database is created by simply enumerating all possible instruction sequences of 2,3,4,5 insns long.  The hard part is deciding when two different insn sequences are identical.  Its not enough to find some sequence that seems to be equivalent, one needs to actually *prove* that they're equivalent on all 2^64 times 2^64 = 2^128 possible inputs; this is too large to test, but can be proven.   One can decide this using "answer set programming" (which is what I would recommend), or by using "satsifiability modulo theories" (which some people are interested in).   Its an interesting approach: you let machine learning discover equivalent sequences, rather than having humans work them out.  Unfortunately, most of this work is at the PhD level; there are several recent theses which can be googled for this.   Three's some interest in doing this for either gcc or clang.
-
-Actually, its way cooler than that. When you have a prover, as above, then you can prove equivalence of snippets of C code.  Which means you can do optimization on source, not on assembly.  I actually prototyped this for a job, it worked :-)
-
-I found that learning ASP gave me an entirely new perspective on PLN and similar ideas.   ASP is very tricky at first, kind of hard to figure out, but once you get the hang of it, its actually fairly easy.  It just forces you to think in a very different way.  Oh, and you can't just re about it; you actually need to actually do something with it, to learn it.
-
------------------------------------------------------------
+\\The current technique that is gaining academic interest is called "superoptimization". This is done by building a database of millions of short instruction sequences; whenever the compiler emits one, you look it up, and see if there is an equivalent but shorter one. The database is created by simply enumerating all possible instruction sequences of 2,3,4,5 insns long. The hard part is deciding when two different insn sequences are identical. Its not enough to find some sequence that seems to be equivalent, one needs to actually *prove* that they're equivalent on all $2^64 times 2^64 = 2^128$ possible inputs; this is too large to test, but can be proven. One can decide this using "answer set programming" (which is what I would recommend), or by using "satsifiability modulo theories" (which some people are interested in). Its an interesting approach: you let machine learning discover equivalent sequences, rather than having humans work them out. Unfortunately, most of this work is at the PhD level; there are several recent theses which can be googled for this. Three's some interest in doing this for either gcc or clang.
+\\Actually, its way cooler than that. When you have a prover, as above, then you can prove equivalence of snippets of C code. Which means you can do optimization on source, not on assembly. I actually prototyped this for a job, it worked :-)
+\\I found that learning ASP gave me an entirely new perspective on PLN and similar ideas. ASP is very tricky at first, kind of hard to figure out, but once you get the hang of it, its actually fairly easy. It just forces you to think in a very different way. Oh, and you can't just re about it; you actually need to actually do something with it, to learn it.
+\\
+\\
 Murilo Saraiva de Queiroz muriloq@gmail.com
-5:32 PM (22 hours ago)
-
-to opencog, me 
-Ricardo Bittencourt (who worked with us here in Brazil for a brief period and now it's at Google) did exactly this, but using as a target an 8-bit microprocessor (the Zilog Z80, quite similar to Intel 8085). Since the input space is much smaller (the number of processor registers and their widths is very small) it a lot more feasible... He used it to reduce the size of code submitted to 4-kilobyte game competitions. 
-
-Here's the page (sorry, Portuguese only):  http://www.ricbit.com/mundobizarro/superopt.php  
-
-muriloq
-Murilo Saraiva de Queiroz, MSc
-Hardware Engineer at NVIDIA
-
-------------------------------------------------------------
+\\Ricardo Bittencourt (who worked with us here in Brazil for a brief period and now it's at Google) did exactly this, but using as a target an 8-bit microprocessor (the Zilog Z80, quite similar to Intel 8085). Since the input space is much smaller (the number of processor registers and their widths is very small) it a lot more feasible... He used it to reduce the size of code submitted to 4-kilobyte game competitions. 
+\\Here's the page (sorry, Portuguese only):
+\\ http://www.ricbit.com/mundobizarro/superopt.php 
+\\muriloq
+\\Murilo Saraiva de Queiroz, MSc
+\\Hardware Engineer at NVIDIA
+\\
+\\
 Linas Vepstas linasvepstas@gmail.com
-6:20 PM (22 hours ago)
-
-to opencog, me
-Not to give away secrets to nvidia, but: it's actually now feasible to do with 32 and 64 bit processors; the trick is to search for inputs where insn sequences are unequal; and modern-day ASP & SMT solvers are quite capable of this, being based on the modern SAT solver techniques.
-
-------------------------------------------------------------
-Murilo Saraiva de Queiroz muriloq@gmail.com
-1:48 PM (2 hours ago)
-
-to opencog, me 
-This was just a hobby project (the community of enthusiasts and collectors of the MSX, an old 8-bit microcomputer platform popular in Brazil, Japan and Europe in the 1980s, is quite active so there are a lot of interesting projects based on it - the simplicity creates interesting constraints for this kind of stuff)
------------------------------------------------------------
- 
+\\Not to give away secrets to nvidia, but: it's actually now feasible to do with 32 and 64 bit processors; the trick is to search for inputs where insn sequences are unequal; and modern-day ASP and SMT solvers are quite capable of this, being based on the modern SAT solver techniques.
+\\
+\\
+\\Murilo Saraiva de Queiroz muriloq@gmail.com
+\\This was just a hobby project (the community of enthusiasts and collectors of the MSX, an old 8-bit microcomputer platform popular in Brazil, Japan and Europe in the 1980s, is quite active so there are a lot of interesting projects based on it - the simplicity creates interesting constraints for this kind of stuff)
+\\
 The result of this discussion is the attempt at optimisation code that I will be building over the next few days. This is in C++ as opposed to C, but in my mind that should be acceptable for the project, as it is a superset of C. This is mostly an experiment for me with using the openCog code in a practical application, and quite possibly will fail - in which case I'll probably attempt to blast out a more simple extension at the last minute.
+\\Eclipse CDT files are included in the repository due to the complexity of building the code, and the unlikelihood that the dependencies will be satisfied for building in the DOC build environment. The hope is to move these to CMAKE files when the project is finished.
+\\
+MOSES/Reduct was rather deeply integrated into the current opencog project, and Tom deemed it not worth the effort to try and extract the relevant details from the project, which doesn't fully compile under Cygwin anyway (which Tom is using). My options were to either use 'expect' and the provided Win32 Binaries to try and get something simple up and running, or try a more naive Levin Search implementation instead of the A.I. based solution. Tom found research on superoptimisation for the Z80 processor (this was code written for a 'under 4k game' competition). The code is simple enough to be rewritten for use with the IMPS instruction set, so if worst comes to worst our group will have something to submit with regards to an extension.
+\\The aim now is to slowly integrate the functionality produced by Moshe Looks in MOSES into this superoptimiser to make it less and less naïve. However, we first need to get this naive implementation up and running, which is still rather complex, and so, this leads us onto our project extension.
 
-Eclipse CDT files are included in the repository due to the complexity of building the code, and the unlikelihood that the dependencies will be satisfied for building in the DOC build environment. The hope is to move these to CMAKE files when the project is finished.
+\section{Project description}
+\indent Superoptimising code is the intention of this project extension. Through discussion we hoped that such a program able to carry out superoptimisation would be able to, if given an empty file and a desired goal output, be able to create fully functioning assembly code to produce this output with the limited instruction set given to us. After further discussion, Tom decided he would continue the project after its due date to see if he can get superoptimisation to work with Intel Assembler (computing within a reasonable time frame of course). 
+\\
+\indent The project now takes a file of assembly code for a program. It then runs over the code and at random, for reasons explained later, will choose “n” lines to replace with “n” new opcodes and suitable operands. The program shall then run this new code and collect off its execution to time it takes to complete and also the output of the program.
+\\
+\indent Afterwards, the program compares the output of the new code to the output that was from the original code. If this is the same it will move onto compare the execution times of each of the programs else it will simply discard the newly created program and move on to the next permutation. When comparing the times, if the new program's time is better, that is less than the current programs time then we shall output the new program code to stdout. Any slower than the original then we just ignore it. This means we keep checking over the permutations of the original assembly code until we reach an improvement which is where the superoptimiser program shall terminate.
+\\
+\indent However, before full termination, the program checks the new assembly code 100 times to gather a suitable amount of data to produce a trustworthy average of time to execute. The next step then follows on whether the average is better or worse than the original assembly code.
+Some other examples of use could include:
 
------------------------------------------------------------
+MORE EXAMPLESSSSSSSSSSSSSSSSs
 
-Update: 6 hours on.. 10/06/12
-
-MOSES/Reduct was rather deeply integrated into the current opencog project, and I deemed it not worth the effort to try and extract the relevant details from the project, which doesn't fully compile under Cygwin anyway (which I am using). My options were to either use 'expect' and the provided Win32 Binaries to try and get something simple up and running, or try a more naiive Levin Search implementation instead of the A.I. based solution. I found research on superoptimisation for the Z80 processor (this was code written for a 'under 4k game' competition). The code is simple enough to be rewritten for use with the IMPS instruction set, so if worst comes to worst I actually have something to submit with regards to an extension.
-
-My aim now is to slowly integrate the functionality produced by Moshe Looks in MOSES into this superoptimsier to make it less and less naiive as I commit. First though, I need to get this naiive implementation up and running, which is still rather complex. 
-The first test for this is optimisation of the code produced by assembling simp_opt1.s - This performs the max of two numbers, and outputs the result.
-
-\maketitle
-
-\section{Detailed explanation}
-
-
-\maketitle
+\section{Design and Implementation}
+\indent Though the initial “dream” extension of the superoptimiser was created; for now, we take a much simpler approach to the problem. Given the limited instruction set, we intend now to simply take in a sample assembly program, in this case it is one that simply computes the max of two given integers. From here, we decided that it would be best to simply go over the code and then randomly select lines to replace. We understood that this takes both a considerable amount of time and also is basically brute forcing optimisation which may take many, many tries. We did discuss other solutions, one would be that we could use the algorithm to store known simplifications of code. This would require use of a database, however, as we only have so many registers to utilise in this project. 
+\\
+\indent There were also many other situations that we had thought of having a go at, but none really managing to come to fruition. For example, we did consider the fact that replacing  a line with several new lines could actually result in an improvement in time in some situations. There was also the fact that a change in a program such as our sample “Max” could simply be replaced with one out opcode and the register which conveniently holds the same answer as the original assembly program's output. These are all flaws within the current superoptimiser that we have. However, upon consultation amongst us both we realised that if we were even able to implement these cases, it would take an extremely long time to compute.
+\\
+\indent We also quickly realised that our original intention of using the newly generated optimised code (had one been found), to use as the benchmark for the next set of comparisons would also make running the program an extremely time costly task. As a result, we just decide to output the first new improvement we encounter when running the superoptimiser. 
+\\
+MORE OF THE PROBLEMS
 
 \section{Testing the Super Optimiser}
  
-\maketitle
 
-\section{Reflections}
-\section{Thomas' reflections}
+\section{Reflection upon the project}
+\underline{Thomas' reflections}
+\\
 
-
-
-
-
-
-
-\section{Terence's reflections}
- This project posed many challenges to me as it is the first joint programming project I've embarked upon. Struggling to pick up C, it was a mixed blessing to be matched with my group mate, Tom, who has a hefty amount of past experience with the language. Unfortunately due to his capabilities, Tom steamed ahead with the project and produced the majority of the code while I had offered novice additions. In some cases, the code I had given was replaced with what Tom believed was better. However, upon catching up with C I found myself gradually being able to fully understand what Tom was doing without the need to stop and ask him for questions. While analysing his code, i picked up numerous helpful tips about the C language and its capabilities which i looked into further.
-
-Although I'd like to say that working with Tom was great, I feel there were problems with group dynamics and synergy, especially as we worked in a pair. Firstly, I believe that my proficiency with the C language might have hindered Tom and the project. With his heavy background of the code, it seemed that he was doing so much more of the work and was keen to be on the get go while I lagged behind and took time to understand what he was doing with the code. We had tried coding sessions where we met up together and worked on the project but that mainly consisted of me asking questions and pointing out small errors in the early stages. It may have been more beneficial to the two of us if we had been grouped with people of the same capabilities with the C language, though, in hindsight, being matched with Tom has definitely helped me improve my programming prowess. Dividing the work was difficult and Tom had a strong drive to press on with the project while I was preoccupied with learning the language itself! Unfortunately this ended up in Tom producing most of the code which I feel is unfair upon him. We did organise several meet ups for the coding of both the assembler and the emulator where we debugged and each coded  and corrected one another. Eventually, we broke down the project into the 4 sections and had us assigned to individual pieces of the project. We each offered contributions to each others parts, however and overlooked what each person was doing.
-
-In terms of communications within the group, since i hardly knew Tom at the beginning of the project, their was a period of only small bouts of conversation going on between us and more coding. however, as the project progressed, I eased up toward Tom and was able to ask questions point out things in code and converse about the project with him. Granted, If i had been matched with a person I already did know well, our synergy would probably have been better but this just serves as a learning experience, working with someone I do not know too well is something I will be expected to do in the world of work and so this project has provided valuable experience. The frequency of our meetings was moderate, I feel that I should have pushed to meet up in labs more often to go through the code more. however, our personal obligations and distance from the college did hamper the ability to do such things. this unfortunately lead to a lot of separate and remote working between us. As a result, we did not meet as often as I would have liked.
-
-The weakest point of our communications, in my opinion, was when it came to choosing what to do for this extension! Having finished the assembler, I had not really given too much thought as to what to progress onto for the extension and resultantly, Tom had chosen a project to start which interested him. Trusting my partner, we went over the basic premise of the extension and it impressed me to say the least but seemed out of my scope in terms of programming ability. Indeed the fundamental idea behind it is letting a program randomly replace code and test for the right results and comparing completion time, but I had my doubts of what i could offer to such a daunting task. However, due to Tom's intention to progress further with it after the project and the interest it provoked in me, this is the extension we chose. I had my doubts about the project especially when he mentioned about comparing times as I believed it to be volatile to use a computer's clock and indeed it produced strange and vastly differing results within the first few run-throughs. This is the one thing if anything that I wish to improve about my group working abilities is to make sure that all members are satisfied with the way the project is progressing and what decision are being made, for in this project, by the time I had found out about Tom's decision, he had already written several hundred lines of code and done considerable research (which I then had to catch up on!).
-
-Overall, I would say that I still have a bit to improve on in terms of team working. However, jumping into the deep end by working with someone I hardly knew and also has much more experience than me has shown me exactly what I want out of, and need to do, when working on significnat pieces of code as a team. Improving communication between members, pushing for more meetings, less remote working and learning to comprimise and ask questions are vital to the success of a programming team. not only that but making sure that each member knows what is going on and is pulling their weight is also vital, something I have to improve on myself. Choosing the right team actually does have an impact on the overall progress of the project as I have found out, not to say that our project was inefficient but rather could have been even more efficient had both of us been matched with programmers of similar skill levels.
-
-This project has benefitted me greatly and working with Tom has pushed me and made me pick up C faster than I would of, while also learning about nice tricks, tools and general coding aesthtetics. It also helped me better understand "git" as well as the fact that texmacs is an abosulte pain to use. It has shown me the stress of working withing a group but it has been a great experience overall, giving me insight to the world of programmers and I'd like to take the lessons I've learnt and apply them to the projects I shall embark on in the near future.
+\noindent\underline{Terence's reflections}
+\\ 
+\indent This project posed many challenges to me; struggling to pick up C, it was a mixed blessing to be matched with my group mate, Tom, who has a hefty amount of experience with the language. Unfortunately due to his capabilities, Tom steamed ahead with the project and ended up producing  a large amount of the code while I had offered smaller additions in comparison. 
+It was geat working with Tom but I did feel there were problems with group dynamics and synergy. I believe that my proficiency with the C language might have hindered Tom and the project as he was much more proficient and able to code from the get go. Early on, we had coding sessions where we met up and worked on the project but they mainly consisted of me asking questions and pointing out small errors. It may have been more beneficial to the two of us if we had been grouped with people of the same capabilities with the C language, though being matched with Tom definitely helped me improve my programming prowess. 
+\\
+\indent Dividing the work was difficult and Tom had a strong drive to press on with the project while I was preoccupied with learning the language itself! We had several meet ups for the coding of both the assembler and the emulator where we debugged and each coded and corrected one another. Eventually, we broke down the project into the 4 sections and had us assigned to individual pieces of the project although we did help each other with their respective sections.
+\\
+\indent In terms of communications within the group, since I hardly knew Tom at the beginning of the project, their was a period of only small bouts of conversation going on between us as we got to know each other better. However, as the project progressed, we eased up were able to ask/answer questions, point out things in code and converse about the project. Granted, if I had been matched with a person I already did know well, our synergy would probably have been better but this just serves as a learning experience for when I enter the world of work where this happens frequently.
+\\
+\indent The frequency of our meetings was moderate, I feel that I should have pushed to meet up in labs more often to go through the code more. However, our personal obligations and distance from the college did hamper the ability to do such things. this unfortunately lead to a lot of separate and remote working between us. As a result, we did not meet as often as I would have liked.
+\\
+\indent In my opinion, our weakest point was communication adn when it came to choosing what to do for this extension! I had not really given too much thought into it before Tom had chosen a project to start which interested him. Trusting Tom, we went over the basics of his idea and it impressed me to say the least, although it originally seemed out of my scope requirement. However, due to Tom's intention to progress further with it after the project and the interest he provoked as he explained to me the project, we proceeded. 
+The one thing if anything that I wish to improve about my group working abilities is to make sure that all members are satisfied with the way the project is progressing and what decisions are being made. In this project, by the time I had found out about Tom's decision, he had already written several hundred lines of code and done considerable research (which I then had to catch up on!).
+\\
+\indent This project has benefited me greatly and working with Tom has pushed me and made me pick up C faster than I would of. Working with someone so far from my programming capability has improved me as a programmer and I have picked up several useful tools and tips. It also helped me better understand "git", the fact that texmacs is an absolute pain to use and the stress of working within a group. I'd like to take the lessons I've learnt and apply them to the projects I shall embark on in the near future as it is clear I have a lot to improve.
 
 \end{document}
