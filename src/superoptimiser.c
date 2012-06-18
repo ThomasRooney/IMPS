@@ -14,6 +14,7 @@
 #define CONST0 0
 #define CONST1 1
 #define CONST2 255
+#define RECURSION_LIMIT 100
 #define START_ARG 0
 #define END_ARG 255
 #define TRY_NUMBER 5
@@ -125,11 +126,14 @@ state *initialise_state(state * old, const char * inputBuffer, const int inputLe
 	if (old == NULL) {
 		virtualState = malloc(sizeof(state));
 		virtualState->MEMORY = calloc(MEMORY_SIZE, sizeof(char));
+		memset(&memoryActiveLoc, -1, sizeof(int) * MEMORY_SIZE);
 	}
 	else {
 		virtualState = old;
 		memset(virtualState->MEMORY, 0, MEMORY_SIZE);
+		memcpy(&memoryActiveLoc, &bestActiveLoc, sizeof(int) * MEMORY_SIZE);
 	}
+	
 	int i = 0;
 	char so[kDisplayWidth+1];
 	memset(virtualState->reg, 0, sizeof(virtualState->reg));
@@ -224,24 +228,27 @@ stack *base;
 int current;
 
 
-stack * breakOutFuncs(instruction * fst, int level)
+stack * breakOutFuncs(instruction * fst, int level, int max)
 {
 	printf("Breaking out insn: ");
 	dump_instruction(*fst);
 	stack * col;
-	if (fst != NULL)
-	{	
-		if ((instructionFromOpcode(fst->raw.opCode) == INSTRUCTION_TYPE_J) || (fst->raw.opCode <= 14 && fst->raw.opCode >= 9)) {
-			return NULL;
-		}
-		col = malloc(sizeof(stack));
-		col->prog = fst;
-		col->progLength += level*sizeof(instruction);
-		if (++fst != NULL)
-		{
-			col->next = breakOutFuncs(fst, ++level);
-		}
-	}
+	instruction *cur;
+	if (level > max)
+		return NULL;
+	for (cur = fst; 
+	cur != NULL &&
+	(!(instructionFromOpcode(fst->raw.opCode) == INSTRUCTION_TYPE_J || (fst->raw.opCode <= 14 && fst->raw.opCode >= 9)));
+	cur = (instruction *)((void *)fst + (sizeof(instruction) * level++))
+	);	
+	if (fst == cur || fst == NULL)
+		// There is no function we can find
+		return breakOutFuncs(fst, level++, max);
+	//fst - cur is now size of function
+	col = malloc(sizeof(stack));
+	col->prog = cur;
+	col->progLength += level*sizeof(instruction);
+	
 	printf("col Length = %i\n", col->progLength);
 	return col;
 }
@@ -290,15 +297,26 @@ void random_evolve_prog(stack * p)
 	}
 }
 
-instruction next_instruction(stack *p, long long nextHash)
+stack * clever_evolve_prog(bestProgram *p)
 {
-	// nextHash % p->progLength = curInstruction
-	// nextHash / p->progLength %  = curArgument
+	stack *newP = NULL;
+	srand ( time(NULL) ); // Initialise Random	
+	
+	// Get a function
+	stack * func = breakOutFuncs((instruction *)p->program, 0, p->programLength);
+	if (func == NULL)
+	{
+		return NULL;
+	}
+	// Find a faster version
+	// ???
+	// Profit
+	// get in memory loc for p's out
+	return newP;
 }
-
-void enumerate_prog(stack * p)
-{
-	srand ( time(NULL) ); // Initialise Random
+/*
+void enumerate_prog(bestProgram * p)
+{	
 	int i;
 	int r;
 	instruction randInstruction;
@@ -311,7 +329,7 @@ void enumerate_prog(stack * p)
 		memcpy(p->prog+rand()%p->progLength - 1, &randInstruction, sizeof(instruction));
 	}
 }
-
+*/
 
 int main (int argc, char **argv) {
 
@@ -321,7 +339,8 @@ int main (int argc, char **argv) {
 	int failures = 0;
 	int  * inputLength = malloc(sizeof(int)); // Kept on heap due to non-local use
 	int iter;
-	int i2;
+	int i2, i3;
+	unsigned long long average;
 	unsigned long long t1, t2;
 	// This is where the opcodeOUT output gets channelled
 	memset(&progOut, 0, sizeof(MAX_OUTPUT));
@@ -337,8 +356,6 @@ int main (int argc, char **argv) {
 	score = malloc(sizeof(goal));
 	score->out = malloc(sizeof(progOut));
 	best.goal.out = malloc(sizeof(progOut));
-	// Set up active memory locations for callbacks.
-	memset(&memoryActiveLoc, -1, MEMORY_SIZE);
 
 	if (readFile(main_args.file_name, inputLength, &inputBuffer)>EXIT_SUCCESS) {	
 		return FATAL_ERROR;
@@ -365,7 +382,8 @@ int main (int argc, char **argv) {
 	p.prog = malloc(best.programLength);
 	memcpy(p.prog, best.program, best.programLength);
 	p.progLength = best.programLength;
-	
+	// try not to use more memory
+	memcpy(&bestActiveLoc, &memoryActiveLoc, MEMORY_SIZE * sizeof(int));
 	// Use best as breeding stock
 	unsigned int i = 0;
 	// if we've done this maybe a few hundred times then give up:
@@ -383,7 +401,17 @@ int main (int argc, char **argv) {
 
 			// CASE:  True IMPROVEMENT!
 			if (score != NULL && (strcmp(score->out, best.goal.out) == 0) && (score->time < best.goal.time)){
-				printf("C");
+				// Test to make sure its not a statistical fluke
+				for (i3 = 0; i3 < 100; i3++)
+				{
+					if (emulation_loop (virtualState, &(best.goal), score) == NULL)
+						continue;
+					average+=score->time;
+				}
+				average = average / 100;
+				if (average <= best.goal.time)
+					continue; // Fluke, continue
+				// else its better
 				best.goal.time = score->time;
 				memcpy(best.goal.out, score->out, sizeof(progOut));
 				best.program = (char *)p.prog;

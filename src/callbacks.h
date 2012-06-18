@@ -4,6 +4,7 @@
 
 #ifdef superoptimiser
 int memoryActiveLoc[MEMORY_SIZE];
+int bestActiveLoc[MEMORY_SIZE];
 void addMemoryActiveLoc(unsigned int memLoc)
 {
 	int i;
@@ -19,13 +20,13 @@ void addMemoryActiveLoc(unsigned int memLoc)
 int getSizeMemLoc(){
 	int i;
 	for (i=0;memoryActiveLoc[i]!=-1;i++);
-	return i;
+	return (i>=MEMORY_SIZE-1?MEMORY_SIZE-1:i);
 }
+
 short getRandMemoryLoc(char opCode)
 {
 	int newI;
 	int size = getSizeMemLoc();
-	
 	if (opCode == 7) // return an active Loc
 		return memoryActiveLoc[rand() % (size + 1)];
 	else
@@ -191,6 +192,10 @@ int doOpCode_OUT (instruction * args, state * state) {
 #endif
   return STATE_INCREMENTPC;
 }
+int doOpCode_NOP(instruction * args, state * state)
+{
+	return STATE_INCREMENTPC;
+}
 
 /**************************************************************
  * Map between Opcode and a function pointer for that operation
@@ -216,6 +221,7 @@ void * opCodeDictionary [NUMBER_OF_OPCODES] =
 	&doOpCode_JMP ,
 	&doOpCode_JR  ,
 	&doOpCode_JAL ,
-	&doOpCode_OUT 
+	&doOpCode_OUT ,
+	&doOpCode_NOP
 };
 
