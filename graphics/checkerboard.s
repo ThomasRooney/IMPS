@@ -32,7 +32,9 @@ print_pixel:      out $7
                   out $9
                   jr  $31                     - back to rowpix
 
-start:            lw  $1  $0  white           - white is the first colour
+start:            lw  $7  $0  white           - white is the first colour
+                  lw  $8  $0  white
+                  lw  $9  $0  white
                   lw  $4  $0  width           - register 4 = width
                   lw  $5  $0  height          - register 5 = height
                   lw  $6  $0  pixel           - register 6 = pixel size

@@ -51,11 +51,18 @@ int doOpCode_MULI(instruction * args, state * state) {
 
 int doOpCode_LW  (instruction * args, state * state) {
   // As below
+  char so[kDisplayWidth+1];
   unsigned calc = state->reg[args->iType.R2] + args->iType.immediateValue;
   if (calc > MEMORY_SIZE || calc < 0)
     return STATE_ERROR;
   else { 
-    state->reg[args->iType.R1] = state->MEMORY[calc];
+    memcpy(&state->reg[args->iType.R1], &state->MEMORY[calc], sizeof(instruction));
+  }
+
+  if (main_args.verbose) 
+  {
+    printf("  M[%i]=%s\n", calc, pBin(*(unsigned int *)&(state->MEMORY[calc]),so));
+    printf("  LW: Memory[%i]: %i to Register[%i]\n", calc, *(unsigned int *)&state->MEMORY[calc], args->iType.R1);
   }
   return STATE_INCREMENTPC;
 }
@@ -67,6 +74,7 @@ int doOpCode_SW  (instruction * args, state * state) {
   if (calc > MEMORY_SIZE || calc < 0)
     return STATE_ERROR;
   else {
+    memcpy(&state->MEMORY[calc], &state->reg[args->iType.R1], sizeof(instruction));
     state->MEMORY[calc] = state->reg[args->iType.R1];
   }
   return STATE_INCREMENTPC;
