@@ -48,10 +48,10 @@ start:            lw  $7  $0  white           - white is the first colour
                   lw  $21 $0  white
 
                   addi $10 $0  0              - register 10 = col
-                  addi $11 $0  0              - register 11 = col_pix
+                  addi $11 $0  0              - register 11 = swap_col
                   addi $12 $0  0              - register 12 = row
-                  addi $13 $0  0              - register 13 = row_pix  
-                    
+                  addi $13 $0  0              - register 13 = swap_row
+
                   out $14
                   out $15                     - outputs P6
                   out $17
@@ -66,26 +66,31 @@ start:            lw  $7  $0  white           - white is the first colour
                   out $19
                   out $17
 
-for_col:          blt  $10 $4  end            - branches and for loops
+for_col:          bge  $10 $6  end            - branches and for loops
 
-for_col_pix:      blt  $11 $6  end_col_pix    - branch if end of pixel
+for_col_pix:      bge  $11 $6  end_col_pix    - branch if end of pixel
 
-for_row:          blt  $12 $5  end_row	
+for_row:          bge  $12 $6  end_row	
 
-for_row_pix:      blt  $13 $6  end_row_pix
+for_row_pix:      bge  $13 $6  end_row_pix
                   jal  print_pixel            - prints pixel out
                   addi $13 $13 1              - row_pix++ 
                   jmp  for_row_pix            - loop row_pix
 
 end_row_pix:      jal  colour_change          - changes the colour
+                  addi $13 $0 0
                   addi $12 $12 1              - row++
                   jmp  for_row                - loop row
 
-end_row:          jal colour_change           - corrects colour change of last iteration  
+end_row:          addi $13 $0 0
+                  addi $12 $0 0
                   addi $11 $11 1              - col_pix++		
-                  jmp  for_col_pix            - loop col_pix
+                  jmp  for_col_pix            - loop col_pix                  
 
-end_col_pix:      addi $10 $10 1              - col++
+end_col_pix:      jal colour_change
+                  addi $11 $0 0
+                  addi $10 $10 1              - col++
+                  addi $13 $0 0
                   jmp  for_col                - loop col
 
 end:              halt
