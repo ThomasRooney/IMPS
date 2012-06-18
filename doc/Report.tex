@@ -88,10 +88,7 @@ Linas Vepstas linasvepstas@gmail.com
 
 \section{Design and Implementation}
 \indent Though the initial “dream” extension of the superoptimiser was created; for now, we take a much simpler approach to the problem. Given the limited instruction set, we intend now to simply take in a sample assembly program, in this case it is one that simply computes the max of two given integers. From here, we decided that it would be best to simply go over the code and then randomly select lines to replace. We understood that this takes both a considerable amount of time and also is basically brute forcing optimisation which may take many, many tries. We did discuss other solutions, one would be that we could use the algorithm to store known simplifications of code. This would require use of a database, however, as we only have so many registers to utilise in this project. 
-\\
-\indent The program that we produced works with the arguments:
-\\ ./superoptimiser <input file> <-s|-v|-h>
-\\ This input file is 
+\\ 
 \\
 \indent However, before full termination, the program checks the new assembly code 100 times to gather a suitable amount of data to produce a trustworthy average of time to execute. The next step then follows on whether the average is better or worse than the original assembly code.
 Some other examples of use could include:
