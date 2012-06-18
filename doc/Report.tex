@@ -106,6 +106,9 @@ MORE OF THE PROBLEMS
 \indent We decided to test the superoptimiser periodically and modularly. 
 \\After doing that, we used a sample assembly code file which computed the max of two supplied numbers. Using this as the input, the program ran against it and made various changes to it, though never overwriting the original file. Instead, we output the new code to stdout so that the user can view the newly optimised code and compare it against the original as well as check for possible errors.
 \indent another test that we ran is as follows. Staring with a  
+\indent Another test that we ran against it was to pass it another program, this was  program that contained a useless loop within it and we hoped that the program would be able to remove the loop and replace it. Having the loop within the program meant it mustered up an eecution time of aroun 300000 computer ticks. After passing it through the superoptimiser, we managed to get an improvement. This iprovment an up n execution time of around 1000 ticks, an extreme improvement. 
+\\
+\indent Upon inspecting the output code from the superoptimiser we found that there code had indeed changed. However, it was doing a varety of strange things such as implement a lot of addi instructions and allocating strange numbers into memory. None-the-less, the superoptimiser did its job, it optimised  program and made it faster than it was before through random removal and replacement of lines of assembly code. on that basis, we decided the count this as successful.
 
 \section{Reflection upon the project}
 \underline{Thomas' reflections}
