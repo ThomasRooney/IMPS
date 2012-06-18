@@ -23,9 +23,6 @@ Optimisation is going to be more difficult. The naiive implementation will proba
 
 ***/
 
-
-
-
 lineLL *tokAssemblerCode(int inputLength, char * inputBuffer)
 { 
 	symbolsLL *symbolsTokCur;
@@ -76,7 +73,7 @@ lineLL *tokAssemblerCode(int inputLength, char * inputBuffer)
 			}
 		}
 		lineTokCur->symbolsHEAD = symbolsTokHEAD;
-		plh = strtok_r (str, "\n", &plhr);
+		plh = strtok_r (str, "\n\r", &plhr);
 		if (plh != NULL) {
 			lineTokCur->next = calloc(1, sizeof(lineLL));
 			lineTokCur = lineTokCur->next;
