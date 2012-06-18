@@ -26,7 +26,7 @@ void dump_state(state *curState) {
 	fprintf(stderr, "Program State\n--------------\
 					\n  ProgramCounter: %i\n", curState->programCounter);
 	for (i = 0; i < MAX_REGISTERS; i++) {
-		fprintf(stderr, "    Register[%i]: %i\n", i, curState->reg[i]);
+		fprintf(stderr, "    Register[%i]: %i\n", i, *(unsigned int *)&curState->reg[i]);
 	}
 }
 
