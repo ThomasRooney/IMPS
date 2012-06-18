@@ -102,7 +102,8 @@ typedef enum opCodeDef {
 	OPCODE_JR = 16,
 	OPCODE_JAL = 17,
 	OPCODE_OUT = 18,
-	NUMBER_OF_OPCODES = 19
+	OPCODE_NOP = 19,
+	NUMBER_OF_OPCODES = 20
 }opCodeDef;
 
 
@@ -135,7 +136,8 @@ const int instructionType [NUMBER_OF_OPCODES] = {
 	INSTRUCTION_TYPE_J,
 	INSTRUCTION_TYPE_R,
 	INSTRUCTION_TYPE_J,
-	INSTRUCTION_TYPE_R
+	INSTRUCTION_TYPE_R,
+	INSTRUCTION_TYPE_NA
 };
 
 int instructionFromOpcode(opCode opCode) {
@@ -326,3 +328,4 @@ void dump_instruction(instruction parsedInstruction) {
 	}
 }
 #endif
+
