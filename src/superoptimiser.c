@@ -141,13 +141,13 @@ state *initialise_state(state * old, const char * inputBuffer, const int inputLe
 
 	// allocate 65535 addresses with 32 bit boundary.	
 	memcpy((virtualState->MEMORY), inputBuffer, inputLength);
-	if (main_args.verbose) {
+	/*if (main_args.verbose) {
 		printf("Moving program data to MEMORY: First 15 values are..\n");
 		for (i=0; i <= 15; i++)
 		{
 			printf("  M[%i]=%s\n", 4*i, pBin(*(unsigned int *)&(virtualState->MEMORY[i*4]),so));
 		}
-	}	
+	}	*/
 	return virtualState;
 }
 
@@ -171,7 +171,7 @@ goal *emulation_loop(state *programState, goal *curGoal, goal *progScore) {
 	while ( programState->programCounter >= 0 && programState->programCounter <= MAX_PROG_LENGTH)
 	{
 		iter++;
-		if (iter % 10 == 0)
+		if (iter % 100 == 0)
 		{
 			// add the difference between progScore->time and get_time
 			progScore->time = abs(iTime - get_time());
@@ -186,11 +186,6 @@ goal *emulation_loop(state *programState, goal *curGoal, goal *progScore) {
 		parsedInstruction = disassembleInstruction(binaryInstruction);
 		if (parsedInstruction.raw.opCode >= 19 || parsedInstruction.raw.opCode < 0 )
 			return NULL;
-		if (main_args.verbose == 1) {
-			printf("Current State..\n");
-			dump_state(programState);
-			dump_instruction(parsedInstruction);
-		}
 		opCodeFunction = (opCodeDictionary[parsedInstruction.raw.opCode]);
 		switch (opCodeFunction(&parsedInstruction, programState))
 		{
@@ -204,15 +199,12 @@ goal *emulation_loop(state *programState, goal *curGoal, goal *progScore) {
 				break;
 			default:
 				return NULL;
-		}
-		if (main_args.step) 
-			waitUntilEnter();
-		
+		}		
 	} 
-	// if we lasted up till now, we're better than the best goal so far
 	// return our score to update the bestProgram
 	progScore->time = abs(iTime - get_time());
 	memcpy(progScore->out, progOut, sizeof(progOut));
+	
 	return progScore;
 }
 
@@ -293,7 +285,7 @@ void random_evolve_prog(stack * p)
 	for (i = 0; i < r; i++)
 	{
 		randInstruction = rand_valid_instruct(p);
-		memcpy(p->prog+rand()%p->progLength - 1, &randInstruction, sizeof(instruction));
+		memcpy(p->prog+(rand()*4)%p->progLength - 1, &randInstruction, sizeof(instruction));
 	}
 }
 
@@ -373,6 +365,8 @@ int main (int argc, char **argv) {
 	{
 		printf("Scoring Function Flawed\n");
 	}
+	if (main_args.step)
+		waitUntilEnter();
 	
 	best.goal.time = score->time;
 	memcpy(best.goal.out, score->out, sizeof(progOut));

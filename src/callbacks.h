@@ -185,10 +185,12 @@ int doOpCode_JAL (instruction * args, state * state) {
 }
 
 int doOpCode_OUT (instruction * args, state * state) {
+  int i = 0;
 #ifndef superoptimiser
   printf("%c", state->reg[args->rType.R1]);
 #else
-  sprintf(progOut, "%c", state->reg[args->rType.R1]);
+  while (progOut[i] != '\0') i++;
+  sprintf(progOut+i, "%c", state->reg[args->rType.R1]);
 #endif
   return STATE_INCREMENTPC;
 }
