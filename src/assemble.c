@@ -59,7 +59,7 @@ lineLL *tokAssemblerCode(int inputLength, char * inputBuffer)
 			waitUntilEnter();
 
 		symbolsTokCur = calloc(1, sizeof(symbolsLL));
-		psh = strtok_r(lineTokCur->line, " ", &pshr);
+		psh = strtok_r(lineTokCur->line, " \t", &pshr);
 		if (psh != NULL) 
 			symbolsTokCur = calloc(1, sizeof(symbolsLL));
 			symbolsTokHEAD = symbolsTokCur;
@@ -69,7 +69,7 @@ lineLL *tokAssemblerCode(int inputLength, char * inputBuffer)
 				printf ("    Symbol %i: %s\n", i2++, psh);
 			symbolsTokCur->symbol = psh;
 			psh = pshr;
-			psh = strtok_r(psh, " ", &pshr);
+			psh = strtok_r(psh, " \t", &pshr);
 			if (psh != NULL) {
 				symbolsTokCur->next = calloc(1, sizeof(symbolsLL));
 				symbolsTokCur = symbolsTokCur->next;
@@ -213,8 +213,9 @@ labelLL *preParse(lineLL * lineHEAD) {
 		iter = 0;
 		for (sCur = lCur->symbolsHEAD; sCur != NULL; sCur = sCur->next)
 		{
-
-			
+                        // If the label is being removed, we'll break to next line
+			if (sCur->symbol == NULL)
+                          break;
 			sizeBuffer = strlen(sCur->symbol);
 			if (main_args.verbose)
 				printf ("Symbol %i: %s..last=%c\n", iter, sCur->symbol, sCur->symbol[sizeBuffer - 1]);
