@@ -82,6 +82,7 @@ void emulation_loop(state *programState) {
 		{
 			case STATE_CONTINUE:
 				break;
+			default: 
 			case STATE_HALT:
 				programState->programCounter = -1; 
 				break;
