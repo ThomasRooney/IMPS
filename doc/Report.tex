@@ -101,6 +101,7 @@ Some other examples of use could include:
 \indent We also quickly realised that our original intention of using the newly generated optimised code (had one been found), to use as the benchmark for the next set of comparisons would also make running the program an extremely time costly task. As a result, we just decide to output the first new improvement we encounter when running the superoptimiser. 
 \\
 MORE OF THE PROBLEMS
+\indent We also experienced Segmentation faults, these were the major problems as the code was runing for very long lenghts of time. Originally, we regularly malloc'd and freed data from the heap. Doing this over long lengths of time, i.e 24 hours, it was found that various segmentation faults were produced that did not occur in the original emulation code. Tom found out that the best way to fix these was to backtrace while running the cod in the debugger gdb. After doing so, he managed to locate the problems cauusing the segmentation faults and manully fixed them.
 
 \section{Testing the Super Optimiser}
 \indent We decided to test the superoptimiser periodically and modularly. 
