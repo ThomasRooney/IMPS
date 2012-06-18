@@ -5,7 +5,7 @@ CFLAGS  = -Wall -g
 
 .PHONY: all clean
 
-all: assemble emulate
+all: assemble emulate superoptimiser
 
 assemble: assemble.o
 	$(CC) $(CFLAGS) -o $@ $^
@@ -13,7 +13,11 @@ assemble: assemble.o
 emulate: emulate.o
 	$(CC) $(CFLAGS) -o $@ $^
 
+superoptimiser: superoptimiser.o
+	$(CC) $(CFLAGS) -o $@ $^
+
 clean:
 	rm -f *.o
 	rm -f assemble
 	rm -f emulate
+	rm -f superoptimiser
